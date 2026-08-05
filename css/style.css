@@ -1,0 +1,401 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, sans-serif;
+}
+
+body{
+    background:linear-gradient(135deg,#4facfe,#00f2fe);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
+
+.container{
+    background:#fff;
+    width:550px;
+    padding:30px;
+    border-radius:15px;
+    text-align:center;
+    box-shadow:0 5px 20px rgba(0,0,0,0.15);
+    text-align:center;
+}
+
+h1{
+    color:#0b3d91;
+    font-size:40px;
+    margin-bottom:15px;
+}
+
+.container p{
+    color:#555;
+    font-size:18px;
+    margin-bottom:20px;
+}
+.tagline{
+    color:#2563eb;
+    font-size:20px;
+    font-weight:bold;
+    letter-spacing:0.5px;
+    transition:0.3;
+}
+.tagline:hover{
+    color:#0b1d51;
+    transform:scale(1.05);
+}
+.user-section{
+    margin-top:20px;
+}
+
+.new-user,
+.old-user{
+    font-size:17px;
+    color:#444;
+    margin:15px 0 10px;
+}
+
+.btn{
+    display:inline-block;
+    text-decoration:none;
+    color:#fff;
+    padding:12px 30px;
+    border-radius:30px;
+    font-size:18px;
+    font-weight:bold;
+    margin-bottom:20px;
+    transition:0.3s ease;
+}
+
+.register{
+    background:#28a745;
+}
+
+.login{
+    background:#007bff;
+}
+
+.btn:hover{
+    transform:translateY(-3px);
+    box-shadow:0 8px 20px rgba(0,0,0,0.2);
+}
+form{
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+    margin-top:20px;
+}
+
+form input{
+    padding:12px;
+    font-size:16px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    outline:none;
+}
+
+form input:focus{
+    border-color:#2563eb;
+    box-shadow:0 0 5px rgba(37,99,235,0.3);
+}
+
+form button{
+    margin-top:10px;
+}
+/* Dashboard Sidebar */
+
+.sidebar{
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 250px;
+    height: 100%;
+    background: #0b1d51;
+    padding-top: 20px;
+}
+
+.sidebar h2{
+    color: white;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.sidebar a{
+    display: block;
+    color: white;
+    text-decoration: none;
+    padding: 15px 25px;
+    font-size: 18px;
+    transition: 0.3s;
+}
+
+.sidebar a:hover{
+    background: #2563eb;
+    padding-left: 35px;
+}
+
+.content{
+    margin-left: 270px;
+    padding: 30px;
+}
+
+.content h1{
+    color: #0b1d51;
+}
+
+.content p{
+    color: #555;
+    font-size: 18px;
+}
+.dashboard-card{
+    background:#fff;
+    padding:25px;
+    border-radius:15px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.1);
+    max-width:700px;
+    margin:auto;
+}
+
+.dashboard-card h1{
+    color:#0b1d51;
+    margin-bottom:15px;
+}
+
+.dashboard-card p{
+    color:#555;
+    line-height:1.7;
+}
+
+.dashboard-card h3{
+    margin-top:20px;
+    color:#2563eb;
+}
+
+.dashboard-card ul{
+    margin-top:10px;
+    padding-left:20px;
+}
+
+.dashboard-card li{
+    margin-bottom:10px;
+}
+/* ===== Project Card ===== */
+
+.project-card{
+    margin-top:20px;
+    padding:25px;
+    border-radius:15px;
+    background:#ffffff;
+    box-shadow:0 5px 15px rgba(0,0,0,0.1);
+}
+
+.project-card h2{
+    color:#0b1d51;
+    margin-bottom:15px;
+}
+
+.project-card p{
+    color:#555;
+    line-height:1.8;
+    margin-bottom:20px;
+}
+
+.btn{
+    display:inline-block;
+    text-decoration:none;
+    background:#2563eb;
+    color:white;
+    padding:10px 20px;
+    border-radius:8px;
+    margin-right:10px;
+    transition:0.3s;
+}
+
+.btn:hover{
+    background:#0b1d51;
+}
+input,
+textarea{
+    width:100%;
+    padding:12px;
+    margin-top:5px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    font-size:16px;
+}
+
+input:focus,
+textarea:focus{
+    outline:none;
+    border-color:#2563eb;
+}
+/* Edit Profile */
+
+.profile-container{
+    width:500px;
+    margin:50px auto;
+    background:white;
+    padding:30px;
+    border-radius:10px;
+    box-shadow:0 0 10px #ccc;
+}
+
+.profile-container h2{
+    text-align:center;
+    color:#2563eb;
+}
+
+.profile-container label{
+    display:block;
+    margin-top:15px;
+    font-weight:bold;
+}
+
+.profile-container input,
+.profile-container textarea{
+    width:100%;
+    padding:10px;
+    margin-top:5px;
+    border:1px solid #ccc;
+    border-radius:5px;
+}
+
+.profile-container textarea{
+    height:100px;
+}
+
+.profile-container button{
+    width:100%;
+    margin-top:20px;
+    padding:12px;
+    background:#2563eb;
+    color:white;
+    border:none;
+    border-radius:5px;
+}
+
+.error{
+    color:red;
+    font-size:14px;
+}
+
+.success{
+    background:#d1fae5;
+    color:green;
+    padding:10px;
+    margin-bottom:15px;
+    border-radius:5px;
+    text-align:center;
+}
+/* Register Page */
+
+.register-container{
+    width:400px;
+    margin:50px auto;
+    background:white;
+    padding:30px;
+    border-radius:15px;
+    box-shadow:0 5px 20px rgba(0,0,0,0.2);
+    text-align:center;
+}
+
+.register-container h2{
+    color:#0b1d51;
+    margin-bottom:20px;
+}
+
+.register-container h2 i{
+    color:#2563eb;
+    margin-right:8px;
+}
+
+.register-container input{
+    width:100%;
+    padding:12px;
+    margin:8px 0;
+    border:1px solid #ccc;
+    border-radius:8px;
+    font-size:16px;
+}
+
+.register-container input:focus{
+    outline:none;
+    border-color:#2563eb;
+    box-shadow:0 0 5px rgba(37,99,235,0.3);
+}
+
+.error{
+    display:block;
+    color:red;
+    font-size:14px;
+    text-align:left;
+    margin-bottom:8px;
+}
+
+.success{
+    color:green;
+    font-size:16px;
+    margin-bottom:15px;
+}
+
+.register-container button{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    background:#28a745;
+    color:white;
+    border:none;
+    border-radius:8px;
+    font-size:18px;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.register-container button:hover{
+    transform:translateY(-5px);
+    box-shadow:0 8px 15px rgba(0,0,0,0.2);
+}
+
+.login-link{
+    margin-top:15px;
+}
+
+.login-link a{
+    color:#2563eb;
+    text-decoration:none;
+    font-weight:bold;
+}
+.profile-img{
+    display:block;
+    margin:20px auto;
+    border-radius:50%;
+    object-fit:cover;
+}
+.change-btn{
+    width:250px;
+    padding:15px;
+    font-size:18px;
+    border-radius:8px;
+}
+button[name="verify"]{
+    width: 100%;
+    padding: 12px;
+    font-size: 18px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+button[name="reset"]{
+    width:100%;
+    padding:12px;
+    font-size:18px;
+    border-radius:8px;
+    cursor:pointer;
+}
+button[name="save"]{
+    width:100%;
+    padding:12px;
+    font-size:18px;
+    border-radius:8px;
+    cursor:pointer;
+}
