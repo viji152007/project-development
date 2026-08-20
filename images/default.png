@@ -1,0 +1,3 @@
+$profile_photo = !empty($user['profile_photo'])
+    ? $user['profile_photo']
+    : "default.png";

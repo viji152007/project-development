@@ -1,0 +1,894 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, sans-serif;
+}
+
+body{
+    background:linear-gradient(135deg,#4facfe,#00f2fe);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
+
+.container{
+    background:#fff;
+    width:550px;
+    padding:30px;
+    border-radius:15px;
+    text-align:center;
+    box-shadow:0 5px 20px rgba(0,0,0,0.15);
+    text-align:center;
+}
+
+h1{
+    color:#0b3d91;
+    font-size:40px;
+    margin-bottom:15px;
+}
+
+.container p{
+    color:#555;
+    font-size:18px;
+    margin-bottom:20px;
+}
+.tagline{
+    color:#2563eb;
+    font-size:20px;
+    font-weight:bold;
+    letter-spacing:0.5px;
+    transition:0.3;
+}
+.tagline:hover{
+    color:#0b1d51;
+    transform:scale(1.05);
+}
+.user-section{
+    margin-top:20px;
+}
+
+.new-user,
+.old-user{
+    font-size:17px;
+    color:#444;
+    margin:15px 0 10px;
+}
+
+.btn{
+    display:inline-block;
+    text-decoration:none;
+    color:#fff;
+    padding:12px 30px;
+    border-radius:30px;
+    font-size:18px;
+    font-weight:bold;
+    margin-bottom:20px;
+    transition:0.3s ease;
+}
+
+.register{
+    background:#28a745;
+}
+
+.login{
+    background:#007bff;
+}
+
+.btn:hover{
+    transform:translateY(-3px);
+    box-shadow:0 8px 20px rgba(0,0,0,0.2);
+}
+form{
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+    margin-top:20px;
+}
+
+form input{
+    padding:12px;
+    font-size:16px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    outline:none;
+}
+
+form input:focus{
+    border-color:#2563eb;
+    box-shadow:0 0 5px rgba(37,99,235,0.3);
+}
+
+form button{
+    margin-top:10px;
+}
+/* Dashboard Sidebar */
+
+.sidebar{
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 250px;
+    height: 100%;
+    background: #0b1d51;
+    padding-top: 20px;
+}
+
+.sidebar h2{
+    color: white;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.sidebar a{
+    display: block;
+    color: white;
+    text-decoration: none;
+    padding: 15px 25px;
+    font-size: 18px;
+    transition: 0.3s;
+}
+
+.sidebar a:hover{
+    background: #2563eb;
+    padding-left: 35px;
+}
+
+.content{
+    margin-left: 270px;
+    padding: 30px;
+}
+
+.content h1{
+    color: #0b1d51;
+}
+
+.content p{
+    color: #555;
+    font-size: 18px;
+}
+.dashboard-card{
+    background:#fff;
+    padding:40px;
+    border-radius:15px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.1);
+    max-width:900px;
+    margin:auto;
+}
+
+.dashboard-card h1{
+    color:#0b1d51;
+    margin-bottom:15px;
+}
+
+.dashboard-card p{
+    color:#555;
+    line-height:1.7;
+}
+
+.dashboard-card h3{
+    margin-top:20px;
+    color:#2563eb;
+}
+
+.dashboard-card ul{
+    margin-top:10px;
+    padding-left:20px;
+}
+
+.dashboard-card li{
+    margin-bottom:10px;
+}
+/* ===== Project Card ===== */
+
+.project-card{
+    margin-top:20px;
+    padding:20px;
+    border-radius:12px;
+    background:#ffffff;
+    box-shadow:0 5px 15px rgba(0,0,0,0.1);
+    margin-bottom:20px;
+}
+.project-card img{
+    width:100%;
+    max-width:400px;
+    height:250px;
+    object-fit:cover;
+    border-radius:10px;
+    margin-bottom:15px;
+}
+
+.project-card h2{
+    color:#0b1d51;
+    margin-bottom:15px;
+}
+
+.project-card p{
+    color:#555;
+    line-height:1.8;
+    margin-bottom:20px;
+}
+
+.btn{
+    display:inline-block;
+    text-decoration:none;
+    background:#2563eb;
+    color:white;
+    padding:10px 20px;
+    border-radius:8px;
+    margin-right:10px;
+    transition:0.3s;
+}
+
+.btn:hover{
+    background:#0b1d51;
+}
+input,
+textarea{
+    width:100%;
+    padding:12px;
+    margin-top:5px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    font-size:16px;
+}
+
+input:focus,
+textarea:focus{
+    outline:none;
+    border-color:#2563eb;
+}
+/* Edit Profile */
+
+.profile-container{
+    width:500px;
+    margin:50px auto;
+    background:white;
+    padding:30px;
+    border-radius:10px;
+    box-shadow:0 0 10px #ccc;
+}
+
+.profile-container h2{
+    text-align:center;
+    color:#2563eb;
+}
+
+.profile-container label{
+    display:block;
+    margin-top:15px;
+    font-weight:bold;
+}
+
+.profile-container input,
+.profile-container textarea{
+    width:100%;
+    padding:10px;
+    margin-top:5px;
+    border:1px solid #ccc;
+    border-radius:5px;
+}
+
+.profile-container textarea{
+    height:100px;
+}
+
+.profile-container button{
+    width:100%;
+    margin-top:20px;
+    padding:12px;
+    background:#2563eb;
+    color:white;
+    border:none;
+    border-radius:5px;
+}
+
+.error{
+    color:red;
+    font-size:14px;
+}
+
+.success{
+    background:#d1fae5;
+    color:green;
+    padding:10px;
+    margin-bottom:15px;
+    border-radius:5px;
+    text-align:center;
+}
+/* Register Page */
+
+.register-container{
+    width:400px;
+    margin:50px auto;
+    background:white;
+    padding:30px;
+    border-radius:15px;
+    box-shadow:0 5px 20px rgba(0,0,0,0.2);
+    text-align:center;
+}
+
+.register-container h2{
+    color:#0b1d51;
+    margin-bottom:20px;
+}
+
+.register-container h2 i{
+    color:#2563eb;
+    margin-right:8px;
+}
+
+.register-container input{
+    width:100%;
+    padding:12px;
+    margin:8px 0;
+    border:1px solid #ccc;
+    border-radius:8px;
+    font-size:16px;
+}
+
+.register-container input:focus{
+    outline:none;
+    border-color:#2563eb;
+    box-shadow:0 0 5px rgba(37,99,235,0.3);
+}
+
+.error{
+    display:block;
+    color:red;
+    font-size:14px;
+    text-align:left;
+    margin-bottom:8px;
+}
+
+.success{
+    color:green;
+    font-size:16px;
+    margin-bottom:15px;
+}
+
+.register-container button{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    background:#28a745;
+    color:white;
+    border:none;
+    border-radius:8px;
+    font-size:18px;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.register-container button:hover{
+    transform:translateY(-5px);
+    box-shadow:0 8px 15px rgba(0,0,0,0.2);
+}
+
+.login-link{
+    margin-top:15px;
+}
+
+.login-link a{
+    color:#2563eb;
+    text-decoration:none;
+    font-weight:bold;
+}
+.profile-img{
+    display:block;
+    margin:20px auto;
+    border-radius:50%;
+    object-fit:cover;
+}
+.change-btn{
+    width:250px;
+    padding:15px;
+    font-size:18px;
+    border-radius:8px;
+}
+button[name="verify"]{
+    width: 100%;
+    padding: 12px;
+    font-size: 18px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+button[name="reset"]{
+    width:100%;
+    padding:12px;
+    font-size:18px;
+    border-radius:8px;
+    cursor:pointer;
+}
+button[name="save"]{
+    width:100%;
+    padding:12px;
+    font-size:18px;
+    border-radius:8px;
+    cursor:pointer;
+}
+/* Skills Page */
+
+.skill-list{
+    display:flex;
+    flex-wrap:wrap;
+    gap:20px;
+    justify-content:center;
+    margin-top:20px;
+}
+
+.skill-item{
+    width:170px;
+    background:#f8f9fa;
+    border-radius:10px;
+    padding:25px;
+    text-align:center;
+    box-shadow:0 2px 8px rgba(0,0,0,0.1);
+    transition:0.3s;
+}
+
+.skill-item:hover{
+    transform:translateY(-5px);
+}
+
+.skill-item i{
+    font-size:50px;
+    color:#2563eb;
+    margin-bottom:10px;
+}
+
+.skill-item span{
+    display:block;
+    font-size:18px;
+    font-weight:bold;
+    color:#333;
+}
+/* Resume Page */
+
+button[name="upload"]{
+    width:100%;
+    padding:14px;
+    font-size:18px;
+    background:#2563eb;
+    color:white;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    margin-top:15px;
+    transition:0.3s;
+}
+
+button[name="upload"]:hover{
+    background:#0b1d51;
+}.edit-profile-card {
+    width: 100% !important;
+    max-width: 900px !important;
+    margin: 0 auto !important;
+    padding: 3px 28px !important;
+}
+
+.edit-profile-card h1 {
+    margin: 0 0 2px !important;
+}
+
+.profile-photo-section {
+    padding: 0 !important;
+    margin-bottom: 2px !important;
+}
+
+/* PROFILE PHOTO */
+
+.current-profile-photo {
+    width: 70px !important;
+    height: 70px !important;
+
+    display: block !important;
+    margin: 0 auto 2px !important;
+
+    border-radius: 50% !important;
+    object-fit: cover !important;
+    object-position: center !important;
+
+    border: 2px solid #00d9ff !important;
+}
+
+/* NEW USER */
+
+.no-photo {
+    width: 70px !important;
+    height: 70px !important;
+
+    margin: 0 auto 2px !important;
+
+    border-radius: 50% !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-direction: column !important;
+
+    border: 2px solid #00d9ff !important;
+    overflow: hidden !important;
+}
+
+/* FORM */
+
+.edit-form-group {
+    margin-bottom: 2px !important;
+}
+
+.edit-form-group label {
+    margin-bottom: 1px !important;
+}
+
+.edit-form-group input {
+    height: 29px !important;
+    padding: 3px 10px !important;
+}
+
+.edit-form-group textarea {
+    height: 33px !important;
+    min-height: 33px !important;
+    padding: 3px 10px !important;
+}
+
+.edit-buttons {
+    margin-top: 2px !important;
+    padding-top: 2px !important;
+}
+/* =====================================================
+   SKILLS - ADD - EDIT COMMON THEME
+===================================================== */
+
+/* Skills main page */
+.skills-page,
+.add-skill-page,
+.edit-skill-page {
+    box-sizing: border-box;
+}
+
+/* Skills page header */
+.skills-header {
+    margin-bottom: 25px;
+}
+
+.skills-header h2,
+.add-skill-page h2,
+.edit-skill-page h2 {
+    color: #111827;
+    font-weight: 700;
+}
+
+/* Description text */
+.skills-header p,
+.add-skill-page > p,
+.edit-skill-page > p {
+    color: #475569;
+}
+
+
+/* =====================================================
+   SKILL CARDS
+===================================================== */
+
+.skill-card {
+    background: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 14px !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+    color: #1e293b;
+}
+
+.skill-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.09);
+}
+
+
+/* Skill name */
+
+.skill-name {
+    color: #111827 !important;
+}
+
+
+/* Percentage */
+
+.skill-percent {
+    color: #2563eb !important;
+}
+
+
+/* =====================================================
+   SKILL BAR
+===================================================== */
+
+.skill-bar {
+    background: #e5e7eb !important;
+    height: 9px;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.skill-progress {
+    background: linear-gradient(
+        90deg,
+        #2563eb,
+        #22d3ee
+    ) !important;
+
+    height: 100%;
+    border-radius: 20px;
+}
+
+
+/* =====================================================
+   EDIT ICON
+===================================================== */
+
+.skill-edit-icon {
+    color: #2563eb !important;
+    font-size: 14px;
+}
+
+.skill-edit-icon:hover {
+    color: #1d4ed8 !important;
+}
+
+
+/* =====================================================
+   DELETE ICON
+===================================================== */
+
+.skill-delete-icon {
+    color: #ef4444 !important;
+    background: transparent !important;
+}
+
+.skill-delete-icon:hover {
+    color: #dc2626 !important;
+}
+
+
+/* =====================================================
+   ADD SKILL BUTTON
+===================================================== */
+
+.add-skill-btn {
+    background: #2563eb !important;
+    color: #ffffff !important;
+
+    border: none !important;
+    border-radius: 8px;
+
+    transition: 0.2s ease;
+}
+
+.add-skill-btn:hover {
+    background: #1d4ed8 !important;
+    color: #ffffff !important;
+}
+
+
+/* =====================================================
+   ADD / EDIT FORM CARD
+===================================================== */
+
+.skill-form {
+    background: #ffffff !important;
+
+    border: 1px solid #e5e7eb !important;
+
+    border-radius: 14px !important;
+
+    box-shadow:
+        0 8px 25px rgba(0, 0, 0, 0.07);
+
+    color: #1e293b;
+}
+
+
+/* =====================================================
+   FORM LABEL
+===================================================== */
+
+.skill-form label {
+    color: #1e293b !important;
+}
+
+
+/* =====================================================
+   INPUT + SELECT
+===================================================== */
+
+.skill-form input,
+.skill-form select {
+    width: 100%;
+
+    background: #f8fafc !important;
+
+    color: #1e293b !important;
+
+    border: 1px solid #dbe3ef !important;
+
+    border-radius: 8px;
+
+    outline: none;
+
+    transition: 0.2s ease;
+}
+
+
+.skill-form input:focus,
+.skill-form select:focus {
+    border-color: #2563eb !important;
+
+    box-shadow:
+        0 0 0 3px rgba(37, 99, 235, 0.10);
+}
+
+
+/* Placeholder */
+
+.skill-form input::placeholder {
+    color: #94a3b8 !important;
+}
+
+
+/* Dropdown */
+
+.skill-form select option {
+    background: #ffffff;
+    color: #1e293b;
+}
+
+
+/* =====================================================
+   ADD / SAVE BUTTON
+===================================================== */
+
+.save-btn {
+    background: #2563eb !important;
+    color: #ffffff !important;
+
+    border: none !important;
+
+    border-radius: 8px;
+
+    transition: 0.2s ease;
+}
+
+.save-btn:hover {
+    background: #1d4ed8 !important;
+}
+
+
+/* =====================================================
+   CANCEL / BACK BUTTON
+===================================================== */
+
+.back-btn {
+    background: #e8f0ff !important;
+
+    color: #2563eb !important;
+
+    border: none !important;
+
+    border-radius: 8px;
+}
+
+.back-btn:hover {
+    background: #dbeafe !important;
+
+    color: #1d4ed8 !important;
+}
+
+
+/* =====================================================
+   ERROR MESSAGE
+===================================================== */
+
+.error-message {
+    background: #fef2f2 !important;
+
+    color: #dc2626 !important;
+
+    border: 1px solid #fecaca;
+
+    border-radius: 8px;
+}
+
+
+/* =====================================================
+   NO SKILLS CARD
+===================================================== */
+
+.no-skills {
+    background: #ffffff;
+
+    border-radius: 14px;
+
+    border: 1px solid #e5e7eb;
+
+    box-shadow:
+        0 6px 20px rgba(0, 0, 0, 0.05);
+
+    color: #1e293b;
+}
+
+
+/* =====================================================
+   EDIT PAGE
+===================================================== */
+
+.edit-skill-page .skill-form {
+    background: #ffffff !important;
+}
+
+
+/* =====================================================
+   DELETE FORM
+===================================================== */
+
+.skill-delete-form {
+    background: transparent !important;
+}
+
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+@media (max-width: 800px) {
+
+    .skill-card {
+        width: 100%;
+    }
+
+    .skill-form {
+        width: 100%;
+    }
+
+}
+.add-project-card {
+    padding: 18px 28px !important;
+}
+/* =========================================
+   DASHBOARD PROFILE PHOTO - ROUND
+========================================= */
+
+.dashboard-profile {
+    width: 130px;
+    height: 130px;
+    margin: 0 auto 20px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 4px solid #ffffff;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Actual Profile Image */
+
+.dashboard-profile-img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+/* Default User Icon */
+
+.dashboard-default-profile {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 55px;
+}
