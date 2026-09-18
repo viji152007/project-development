@@ -283,13 +283,12 @@ if (isset($_SESSION['successMsg'])) {
 
     <!-- EDUCATION -->
 
-    <a href="education.php">
+   <a href="education.php">
+    <i class="fa-solid fa-graduation-cap"></i>
+    <span>Education</span>
+</a>
 
-        <i class="fa-solid fa-graduation-cap"></i>
 
-        <span>Education</span>
-
-    </a>
 
 
     <!-- SKILLS -->

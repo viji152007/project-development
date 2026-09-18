@@ -95,15 +95,18 @@ $total_education = getCount($conn, "education");
                 <span>Education</span>
             </a>
                <a href="contact.php">
-                <i class="fa-solid fa-graduation-cap"></i>
+                        <i class="fa-solid fa-envelope"></i>
+
                 <span>Contact</span>
 </a>
                    <a href="skills.php">
-                <i class="fa-solid fa-graduation-cap"></i>
+                            <i class="fa-solid fa-code"></i>
+
                 <span>Skills</span>
 </a>
                <a href="resume.php">
-                <i class="fa-solid fa-graduation-cap"></i>
+                        <i class="fas fa-file-alt"></i>
+
                 <span>Resume</span>
             </a>
 

@@ -17,7 +17,8 @@
         <span>About</span>
     </a>
      <a href="/vijiii/education.php">
-        <i class="fa-solid fa-user"></i>
+                        <i class="fa-solid fa-graduation-cap"></i>
+
         <span>Education</span>
     </a>
 
