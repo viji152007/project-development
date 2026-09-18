@@ -2,9 +2,14 @@
 
 session_start();
 
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+require_once "config/db.php";
+
 
 /* =========================================================
-   LOGIN CHECK
+   CHECK LOGIN
 ========================================================= */
 
 if (!isset($_SESSION['user_id'])) {
@@ -13,12 +18,6 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 
-/* =========================================================
-   DATABASE
-========================================================= */
-
-include("config/db.php");
-
 $user_id = (int) $_SESSION['user_id'];
 
 $message = "";
@@ -26,7 +25,7 @@ $message_type = "";
 
 
 /* =========================================================
-   GET USER DETAILS
+   GET USER DATA
 ========================================================= */
 
 $stmt = $conn->prepare("
@@ -44,11 +43,14 @@ $stmt = $conn->prepare("
     LIMIT 1
 ");
 
+if (!$stmt) {
+    die("Database Error: " . $conn->error);
+}
+
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 
 $result = $stmt->get_result();
-
 $user = $result->fetch_assoc();
 
 $stmt->close();
@@ -67,240 +69,109 @@ if (!$user) {
    UPDATE PROFILE
 ========================================================= */
 
-if (isset($_POST['update_profile'])) {
+if (
+    $_SERVER["REQUEST_METHOD"] === "POST" &&
+    isset($_POST["update_profile"])
+) {
 
-    $fullname =
-        trim($_POST['fullname'] ?? '');
-
-    $education =
-        trim($_POST['education'] ?? '');
-
-    $career_objective =
-        trim($_POST['career_objective'] ?? '');
-
-    $email =
-        trim($_POST['email'] ?? '');
-
-    $phone =
-        trim($_POST['phone'] ?? '');
-
-    $profile_photo =
-        $user['profile_photo'] ?? '';
+    $fullname = trim($_POST["fullname"] ?? "");
+    $education = trim($_POST["education"] ?? "");
+    $career_objective = trim($_POST["career_objective"] ?? "");
+    $email = trim($_POST["email"] ?? "");
+    $phone = trim($_POST["phone"] ?? "");
 
 
     /* =====================================================
-       FULL NAME
+       VALIDATION
     ===================================================== */
 
     if ($fullname === "") {
 
-        $message =
-            "Please enter your full name.";
+        $message = "Please enter your full name.";
+        $message_type = "error";
 
-        $message_type =
-            "error";
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+
+        $message = "Please enter a valid email.";
+        $message_type = "error";
+
+    } elseif (!preg_match("/^[0-9]{10}$/", $phone)) {
+
+        $message = "Phone number must contain exactly 10 digits.";
+        $message_type = "error";
     }
 
 
     /* =====================================================
-       EMAIL
+       PHOTO PROCESSING
     ===================================================== */
 
-    elseif ($email === "") {
+    $new_photo = false;
+    $image_data = null;
 
-        $message =
-            "Please enter your email.";
-
-        $message_type =
-            "error";
-    }
-
-
-    elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-
-        $message =
-            "Please enter a valid email.";
-
-        $message_type =
-            "error";
-    }
-
-
-    /* =====================================================
-       PHONE - EXACTLY 10 DIGITS
-    ===================================================== */
-
-    elseif (!preg_match('/^[0-9]{10}$/', $phone)) {
-
-        $message =
-            "Phone number must contain exactly 10 digits.";
-
-        $message_type =
-            "error";
-    }
-
-
-    /* =====================================================
-       PHOTO UPLOAD
-    ===================================================== */
 
     if (
         $message === "" &&
-        isset($_FILES['profile_photo']) &&
-        $_FILES['profile_photo']['error'] !== UPLOAD_ERR_NO_FILE
+        isset($_FILES["profile_photo"]) &&
+        $_FILES["profile_photo"]["error"] !== UPLOAD_ERR_NO_FILE
     ) {
 
-
         if (
-            $_FILES['profile_photo']['error']
-            !== UPLOAD_ERR_OK
+            $_FILES["profile_photo"]["error"] !== UPLOAD_ERR_OK
         ) {
 
-            $message =
-                "Photo upload failed.";
-
-            $message_type =
-                "error";
+            $message = "Photo upload failed.";
+            $message_type = "error";
 
         } else {
 
+            $tmp_name = $_FILES["profile_photo"]["tmp_name"];
 
-            /* =================================================
-               UPLOAD DIRECTORY
-            ================================================= */
-
-            $upload_dir =
-                __DIR__ . "/uploads/profile/";
+            $image_info = @getimagesize($tmp_name);
 
 
-            if (!is_dir($upload_dir)) {
+            if ($image_info === false) {
 
-                mkdir(
-                    $upload_dir,
-                    0777,
-                    true
-                );
-            }
-
-
-            /* =================================================
-               FILE EXTENSION
-            ================================================= */
-
-            $extension =
-                strtolower(
-                    pathinfo(
-                        $_FILES['profile_photo']['name'],
-                        PATHINFO_EXTENSION
-                    )
-                );
-
-
-            $allowed_extensions = [
-                "jpg",
-                "jpeg",
-                "png",
-                "webp"
-            ];
-
-
-            if (
-                !in_array(
-                    $extension,
-                    $allowed_extensions,
-                    true
-                )
-            ) {
-
-                $message =
-                    "Only JPG, JPEG, PNG and WEBP images are allowed.";
-
-                $message_type =
-                    "error";
+                $message = "Please select a valid image.";
+                $message_type = "error";
 
             } else {
 
-
-                /* =================================================
-                   CHECK IMAGE
-                ================================================= */
-
-                $image_info =
-                    getimagesize(
-                        $_FILES['profile_photo']['tmp_name']
-                    );
+                $allowed_types = [
+                    "image/jpeg",
+                    "image/png",
+                    "image/webp"
+                ];
 
 
-                if ($image_info === false) {
+                if (
+                    !in_array(
+                        $image_info["mime"],
+                        $allowed_types,
+                        true
+                    )
+                ) {
 
                     $message =
-                        "Please select a valid image.";
+                        "Only JPG, PNG and WEBP images are allowed.";
 
-                    $message_type =
-                        "error";
+                    $message_type = "error";
 
                 } else {
 
-
-                    /* =================================================
-                       CREATE NEW FILE NAME
-                    ================================================= */
-
-                    $new_filename =
-                        "profile_" .
-                        $user_id .
-                        "_" .
-                        time() .
-                        "." .
-                        $extension;
+                    $image_data = file_get_contents($tmp_name);
 
 
-                    $target_file =
-                        $upload_dir .
-                        $new_filename;
+                    if ($image_data === false) {
 
+                        $message =
+                            "Unable to read selected photo.";
 
-                    /* =================================================
-                       MOVE PHOTO
-                    ================================================= */
-
-                    if (
-                        move_uploaded_file(
-                            $_FILES['profile_photo']['tmp_name'],
-                            $target_file
-                        )
-                    ) {
-
-
-                        /* =================================================
-                           DELETE OLD PHOTO
-                        ================================================= */
-
-                        if (
-                            !empty($profile_photo) &&
-                            file_exists(
-                                $upload_dir .
-                                $profile_photo
-                            )
-                        ) {
-
-                            unlink(
-                                $upload_dir .
-                                $profile_photo
-                            );
-                        }
-
-
-                        $profile_photo =
-                            $new_filename;
+                        $message_type = "error";
 
                     } else {
 
-                        $message =
-                            "Unable to save the selected photo.";
-
-                        $message_type =
-                            "error";
+                        $new_photo = true;
                     }
                 }
             }
@@ -309,86 +180,125 @@ if (isset($_POST['update_profile'])) {
 
 
     /* =====================================================
-       DATABASE UPDATE
+       UPDATE DATABASE
     ===================================================== */
 
     if ($message === "") {
 
 
-        $update = $conn->prepare("
-            UPDATE users
-            SET
-                fullname = ?,
-                education = ?,
-                career_objective = ?,
-                email = ?,
-                phone = ?,
-                profile_photo = ?
-            WHERE id = ?
-        ");
+        /* =================================================
+           UPDATE WITH NEW PHOTO
+        ================================================= */
+
+        if ($new_photo) {
+
+            $stmt = $conn->prepare("
+                UPDATE users
+                SET
+                    fullname = ?,
+                    education = ?,
+                    career_objective = ?,
+                    email = ?,
+                    phone = ?,
+                    profile_photo = ?
+                WHERE id = ?
+            ");
 
 
-        $update->bind_param(
-            "ssssssi",
-            $fullname,
-            $education,
-            $career_objective,
-            $email,
-            $phone,
-            $profile_photo,
-            $user_id
-        );
+            if (!$stmt) {
+                die("Database Error: " . $conn->error);
+            }
 
 
-        if ($update->execute()) {
+            $stmt->bind_param(
+                "ssssssi",
+                $fullname,
+                $education,
+                $career_objective,
+                $email,
+                $phone,
+                $image_data,
+                $user_id
+            );
+        }
 
 
-            /* Update session name */
+        /* =================================================
+           UPDATE WITHOUT PHOTO
+        ================================================= */
 
-            $_SESSION['fullname'] =
-                $fullname;
+        else {
+
+            $stmt = $conn->prepare("
+                UPDATE users
+                SET
+                    fullname = ?,
+                    education = ?,
+                    career_objective = ?,
+                    email = ?,
+                    phone = ?
+                WHERE id = ?
+            ");
 
 
-            /*
-             * Stay on edit profile page
-             * so photo/details are immediately visible.
-             */
+            if (!$stmt) {
+                die("Database Error: " . $conn->error);
+            }
+
+
+            $stmt->bind_param(
+                "sssssi",
+                $fullname,
+                $education,
+                $career_objective,
+                $email,
+                $phone,
+                $user_id
+            );
+        }
+
+
+        /* =================================================
+           EXECUTE
+        ================================================= */
+
+        if ($stmt->execute()) {
+
+            $stmt->close();
+
+            $_SESSION["fullname"] = $fullname;
 
             header("Location: edit_profile.php?updated=1");
-            exit();
 
+            exit();
 
         } else {
 
             $message =
-                "Profile update failed.";
+                "Update Error: " . $stmt->error;
 
-            $message_type =
-                "error";
+            $message_type = "error";
+
+            $stmt->close();
         }
-
-
-        $update->close();
     }
 }
 
 
 /* =========================================================
-   SUCCESS MESSAGE AFTER REDIRECT
+   SUCCESS MESSAGE
 ========================================================= */
 
-if (isset($_GET['updated'])) {
+if (isset($_GET["updated"])) {
 
-    $message =
-        "Profile updated successfully.";
+    $message = "Profile updated successfully.";
 
-    $message_type =
-        "success";
+    $message_type = "success";
 }
 
 
 /* =========================================================
-   GET UPDATED USER DETAILS
+   GET LATEST DATA
 ========================================================= */
 
 $stmt = $conn->prepare("
@@ -406,14 +316,53 @@ $stmt = $conn->prepare("
     LIMIT 1
 ");
 
+
+if (!$stmt) {
+    die("Database Error: " . $conn->error);
+}
+
+
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 
 $result = $stmt->get_result();
-
 $user = $result->fetch_assoc();
 
 $stmt->close();
+
+
+/* =========================================================
+   DB PHOTO → BASE64
+========================================================= */
+
+$profile_image = "";
+
+
+if (
+    isset($user["profile_photo"]) &&
+    $user["profile_photo"] !== null &&
+    strlen($user["profile_photo"]) > 0
+) {
+
+    $image_info = @getimagesizefromstring(
+        $user["profile_photo"]
+    );
+
+
+    if (
+        $image_info !== false &&
+        isset($image_info["mime"])
+    ) {
+
+        $profile_image =
+            "data:" .
+            $image_info["mime"] .
+            ";base64," .
+            base64_encode(
+                $user["profile_photo"]
+            );
+    }
+}
 
 ?>
 
@@ -431,7 +380,7 @@ $stmt->close();
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Edit Profile - Personal Portfolio</title>
+    <title>Edit Profile</title>
 
 
     <!-- EXISTING CSS -->
@@ -455,119 +404,8 @@ $stmt->close();
 <body>
 
 
-<!-- =========================================================
-     SIDEBAR
-========================================================= -->
+<?php include "sidebar.php"; ?>
 
-<div class="sidebar">
-
-
-    <h2>
-
-        <i class="fa-solid fa-user"></i>
-
-        My Portfolio
-
-    </h2>
-
-
-    <a href="dashboard.php">
-
-        <i class="fa-solid fa-house"></i>
-
-        Home
-
-    </a>
-
-
-    <a href="about.php">
-
-        <i class="fa-solid fa-user"></i>
-
-        About
-
-    </a>
-
-
-    <a href="skills.php">
-
-        <i class="fa-solid fa-code"></i>
-
-        Skills
-
-    </a>
-
-
-    <a href="projects.php">
-
-        <i class="fa-solid fa-folder"></i>
-
-        Projects
-
-    </a>
-
-
-    <a href="certificates.php">
-
-        <i class="fa-solid fa-certificate"></i>
-
-        Certificates
-
-    </a>
-
-
-    <a href="resume.php">
-
-        <i class="fas fa-file-alt"></i>
-
-        Resume
-
-    </a>
-
-
-    <a href="contact.php">
-
-        <i class="fa-solid fa-envelope"></i>
-
-        Contact
-
-    </a>
-
-
-    <a href="change_password.php">
-
-        <i class="fa-solid fa-lock"></i>
-
-        Change Password
-
-    </a>
-
-
-    <a href="preview.php">
-
-        <i class="fa-solid fa-eye"></i>
-
-        Preview
-
-    </a>
-
-
-    <a href="logout.php">
-
-        <i class="fa-solid fa-right-from-bracket"></i>
-
-        Logout
-
-    </a>
-
-
-</div>
-
-
-
-<!-- =========================================================
-     CONTENT
-========================================================= -->
 
 <div class="content">
 
@@ -586,17 +424,14 @@ $stmt->close();
         </h1>
 
 
-
         <!-- MESSAGE -->
 
         <?php if ($message !== ""): ?>
 
-            <div class="<?php echo $message_type; ?>">
+            <div class="<?php echo htmlspecialchars($message_type); ?>">
 
                 <?php
-
                 echo htmlspecialchars($message);
-
                 ?>
 
             </div>
@@ -604,78 +439,55 @@ $stmt->close();
         <?php endif; ?>
 
 
-
-        <!-- =================================================
-             PROFILE PHOTO
-        ================================================= -->
+        <!-- PROFILE PHOTO -->
 
         <div class="profile-photo-section">
 
 
-            <?php if (!empty($user['profile_photo'])): ?>
-
+            <?php if ($profile_image !== ""): ?>
 
                 <img
-                    src="uploads/profile/<?php
-                        echo htmlspecialchars(
-                            $user['profile_photo']
-                        );
-                    ?>"
+                    id="photoPreview"
+                    src="<?php echo htmlspecialchars($profile_image); ?>"
                     class="current-profile-photo"
                     alt="Profile Photo"
                 >
 
 
-                <label
-                    for="profile_photo"
-                    class="photo-label"
-                >
-
-                    <i class="fa-solid fa-camera"></i>
-
-                    Change Photo
-
-                </label>
-
-
             <?php else: ?>
 
-
-                <label for="profile_photo">
-
-                    <div class="no-photo">
-
-                        <i class="fa-solid fa-camera"></i>
-
-                        <span>Add Photo</span>
-
-                    </div>
-
-                </label>
-
-
-                <label
-                    for="profile_photo"
-                    class="photo-label"
+                <div
+                    id="noPhoto"
+                    class="no-photo"
                 >
 
-                    <i class="fa-solid fa-plus"></i>
+                    <i class="fa-solid fa-user"></i>
 
-                    Add Photo
+                    <span>No Photo</span>
 
-                </label>
-
+                </div>
 
             <?php endif; ?>
+
+
+            <!-- CHOOSE PHOTO -->
+
+            <label
+                for="profile_photo"
+                class="photo-label"
+            >
+
+                <i class="fa-solid fa-camera"></i>
+
+                Choose Photo
+
+            </label>
 
 
         </div>
 
 
-
-        <!-- =================================================
-             FORM
-        ================================================= -->
+        <!-- FORM -->
 
         <form
             method="POST"
@@ -683,7 +495,7 @@ $stmt->close();
         >
 
 
-            <!-- HIDDEN FILE INPUT -->
+            <!-- PHOTO INPUT -->
 
             <input
                 type="file"
@@ -693,13 +505,11 @@ $stmt->close();
             >
 
 
-
             <!-- FULL NAME -->
 
             <div class="edit-form-group">
 
-
-                <label for="fullname">
+                <label>
 
                     <i class="fa-solid fa-user"></i>
 
@@ -710,27 +520,23 @@ $stmt->close();
 
                 <input
                     type="text"
-                    id="fullname"
                     name="fullname"
                     value="<?php
                         echo htmlspecialchars(
-                            $user['fullname'] ?? ''
+                            $user["fullname"] ?? ""
                         );
                     ?>"
                     required
                 >
 
-
             </div>
-
 
 
             <!-- EDUCATION -->
 
             <div class="edit-form-group">
 
-
-                <label for="education">
+                <label>
 
                     <i class="fa-solid fa-graduation-cap"></i>
 
@@ -741,26 +547,22 @@ $stmt->close();
 
                 <input
                     type="text"
-                    id="education"
                     name="education"
                     value="<?php
                         echo htmlspecialchars(
-                            $user['education'] ?? ''
+                            $user["education"] ?? ""
                         );
                     ?>"
                 >
 
-
             </div>
-
 
 
             <!-- CAREER OBJECTIVE -->
 
             <div class="edit-form-group">
 
-
-                <label for="career_objective">
+                <label>
 
                     <i class="fa-solid fa-bullseye"></i>
 
@@ -770,25 +572,21 @@ $stmt->close();
 
 
                 <textarea
-                    id="career_objective"
                     name="career_objective"
                 ><?php
                     echo htmlspecialchars(
-                        $user['career_objective'] ?? ''
+                        $user["career_objective"] ?? ""
                     );
                 ?></textarea>
 
-
             </div>
-
 
 
             <!-- EMAIL -->
 
             <div class="edit-form-group">
 
-
-                <label for="email">
+                <label>
 
                     <i class="fa-solid fa-envelope"></i>
 
@@ -799,27 +597,23 @@ $stmt->close();
 
                 <input
                     type="email"
-                    id="email"
                     name="email"
                     value="<?php
                         echo htmlspecialchars(
-                            $user['email'] ?? ''
+                            $user["email"] ?? ""
                         );
                     ?>"
                     required
                 >
 
-
             </div>
-
 
 
             <!-- PHONE -->
 
             <div class="edit-form-group">
 
-
-                <label for="phone">
+                <label>
 
                     <i class="fa-solid fa-phone"></i>
 
@@ -830,38 +624,38 @@ $stmt->close();
 
                 <input
                     type="tel"
-                    id="phone"
                     name="phone"
                     value="<?php
                         echo htmlspecialchars(
-                            $user['phone'] ?? ''
+                            $user["phone"] ?? ""
                         );
                     ?>"
-                    placeholder="Enter 10 digit phone number"
                     maxlength="10"
                     minlength="10"
                     pattern="[0-9]{10}"
                     inputmode="numeric"
-                    oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,10);"
                     required
+                    oninput="
+                        this.value =
+                        this.value
+                        .replace(/[^0-9]/g, '')
+                        .slice(0, 10);
+                    "
                 >
-
 
             </div>
 
 
-
-            <!-- =================================================
-                 BUTTONS
-            ================================================= -->
+            <!-- BUTTONS -->
 
             <div class="edit-buttons">
 
 
+                <!-- UPDATE -->
+
                 <button
                     type="submit"
                     name="update_profile"
-                    class="save-btn"
                 >
 
                     <i class="fa-solid fa-rotate"></i>
@@ -871,10 +665,9 @@ $stmt->close();
                 </button>
 
 
-                <a
-                    href="about.php"
-                    class="cancel-btn"
-                >
+                <!-- BACK → ABOUT -->
+
+                <a href="about.php">
 
                     <i class="fa-solid fa-arrow-left"></i>
 
@@ -893,6 +686,95 @@ $stmt->close();
 
 
 </div>
+
+
+<!-- PHOTO PREVIEW -->
+
+<script>
+
+const photoInput =
+    document.getElementById("profile_photo");
+
+
+let photoPreview =
+    document.getElementById("photoPreview");
+
+
+const noPhoto =
+    document.getElementById("noPhoto");
+
+
+photoInput.addEventListener("change", function () {
+
+    const file = this.files[0];
+
+    if (!file) {
+        return;
+    }
+
+
+    const reader = new FileReader();
+
+
+    reader.onload = function (event) {
+
+
+        if (photoPreview) {
+
+            photoPreview.src =
+                event.target.result;
+
+            photoPreview.style.display =
+                "block";
+
+        } else {
+
+            const newImage =
+                document.createElement("img");
+
+            newImage.id =
+                "photoPreview";
+
+            newImage.className =
+                "current-profile-photo";
+
+            newImage.alt =
+                "Profile Photo";
+
+            newImage.src =
+                event.target.result;
+
+
+            if (noPhoto) {
+
+                noPhoto.parentNode.insertBefore(
+                    newImage,
+                    noPhoto
+                );
+
+                noPhoto.style.display =
+                    "none";
+            }
+
+
+            photoPreview = newImage;
+        }
+
+
+        if (noPhoto) {
+
+            noPhoto.style.display =
+                "none";
+        }
+
+    };
+
+
+    reader.readAsDataURL(file);
+
+});
+
+</script>
 
 
 </body>

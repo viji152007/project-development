@@ -18,6 +18,17 @@ if (!isset($_SESSION['username'])) {
 
 
 /* =====================================================
+   DATABASE CHECK
+===================================================== */
+
+if (!isset($conn) || $conn->connect_error) {
+
+    die("Database connection failed.");
+
+}
+
+
+/* =====================================================
    GET LOGGED-IN USER
 ===================================================== */
 
@@ -33,7 +44,9 @@ $stmt = $conn->prepare("
 
 
 if (!$stmt) {
+
     die("User query error: " . $conn->error);
+
 }
 
 
@@ -68,20 +81,33 @@ $message_type = "";
 
 /* =====================================================
    DELETE CONTACT
+   DELETE DIRECTLY FROM DATABASE
 ===================================================== */
 
-if (isset($_GET['delete']) && $_GET['delete'] === '1') {
+if (
+    $_SERVER['REQUEST_METHOD'] === 'POST' &&
+    isset($_POST['delete_contact'])
+) {
 
+
+    /*
+       Delete ONLY the logged-in user's
+       contact record.
+    */
 
     $stmt = $conn->prepare("
         DELETE FROM contact
         WHERE user_id = ?
-        LIMIT 1
     ");
 
 
     if (!$stmt) {
-        die("Delete query error: " . $conn->error);
+
+        die(
+            "Delete query error: " .
+            $conn->error
+        );
+
     }
 
 
@@ -95,16 +121,28 @@ if (isset($_GET['delete']) && $_GET['delete'] === '1') {
 
         $stmt->close();
 
-        header("Location: contact.php?success=deleted");
+
+        /*
+           Redirect to avoid duplicate
+           deletion on refresh.
+        */
+
+        header(
+            "Location: contact.php?success=deleted"
+        );
+
         exit();
 
     }
 
 
-    $stmt->close();
+    $message =
+        "Unable to delete contact details.";
 
-    $message = "Unable to delete contact details.";
     $message_type = "error";
+
+
+    $stmt->close();
 
 }
 
@@ -115,23 +153,32 @@ if (isset($_GET['delete']) && $_GET['delete'] === '1') {
 
 if (isset($_GET['success'])) {
 
+
     if ($_GET['success'] === 'added') {
 
-        $message = "Contact details added successfully.";
+        $message =
+            "Contact details added successfully.";
+
         $message_type = "success";
 
     }
+
 
     elseif ($_GET['success'] === 'updated') {
 
-        $message = "Contact details updated successfully.";
+        $message =
+            "Contact details updated successfully.";
+
         $message_type = "success";
 
     }
 
+
     elseif ($_GET['success'] === 'deleted') {
 
-        $message = "Contact details deleted successfully.";
+        $message =
+            "Contact details deleted successfully.";
+
         $message_type = "success";
 
     }
@@ -180,7 +227,12 @@ $stmt = $conn->prepare("
 
 
 if (!$stmt) {
-    die("Contact query error: " . $conn->error);
+
+    die(
+        "Contact query error: " .
+        $conn->error
+    );
+
 }
 
 
@@ -202,19 +254,13 @@ $stmt->close();
    FORM OPEN
 ===================================================== */
 
-/*
-   IMPORTANT:
-
-   Contact already exists:
-   -> form opens ONLY when edit=1
-
-   Contact does not exist:
-   -> form does NOT open automatically
-   -> Add Contact Details box shown
-*/
-
 $form_open = false;
 
+
+/*
+   Existing contact:
+   Form opens only when edit=1
+*/
 
 if (
     isset($_GET['edit']) &&
@@ -229,9 +275,10 @@ if (
 }
 
 
-/* =====================================================
-   ADD CONTACT BUTTON
-===================================================== */
+/*
+   No contact:
+   Form opens when add=1
+*/
 
 if (
     isset($_GET['add']) &&
@@ -248,7 +295,10 @@ if (
    SAVE / UPDATE CONTACT
 ===================================================== */
 
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
+if (
+    $_SERVER["REQUEST_METHOD"] === "POST" &&
+    isset($_POST['save_contact'])
+) {
 
 
     $contact_id = (int)(
@@ -315,7 +365,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 github = ?,
                 website = ?
             WHERE id = ?
-            AND user_id = ?
+              AND user_id = ?
         ");
 
 
@@ -348,6 +398,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             $stmt->close();
 
+
             header(
                 "Location: contact.php?success=updated"
             );
@@ -357,13 +408,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }
 
 
-        $message = "Contact update failed.";
+        $message =
+            "Contact update failed.";
+
         $message_type = "error";
+
 
         $stmt->close();
 
-
     }
+
 
     /* =================================================
        INSERT
@@ -373,8 +427,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 
         /*
-           Safety:
-           One user = one contact
+           Check whether this user already
+           has contact details.
         */
 
         $check_stmt = $conn->prepare("
@@ -422,6 +476,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         }
 
+
+        /* =============================================
+           INSERT CONTACT
+        ============================================= */
 
         $stmt = $conn->prepare("
             INSERT INTO contact
@@ -479,6 +537,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             $stmt->close();
 
+
             header(
                 "Location: contact.php?success=added"
             );
@@ -488,8 +547,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }
 
 
-        $message = "Contact details could not be added.";
+        $message =
+            "Contact details could not be added.";
+
         $message_type = "error";
+
 
         $stmt->close();
 
@@ -499,7 +561,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 
 /* =====================================================
-   REFRESH CONTACT
+   REFRESH CONTACT AFTER SAVE / UPDATE / DELETE
 ===================================================== */
 
 $stmt = $conn->prepare("
@@ -519,6 +581,16 @@ $stmt = $conn->prepare("
 ");
 
 
+if (!$stmt) {
+
+    die(
+        "Contact refresh query error: " .
+        $conn->error
+    );
+
+}
+
+
 $stmt->bind_param(
     "i",
     $user_id
@@ -534,7 +606,7 @@ $stmt->close();
 
 
 /* =====================================================
-   IF EDIT MODE
+   EDIT MODE
 ===================================================== */
 
 if (
@@ -1140,6 +1212,17 @@ if (
 }
 
 
+/* =====================================================
+   DELETE BUTTON
+===================================================== */
+
+.delete-contact-form {
+
+    margin: 0;
+
+}
+
+
 .delete-contact-btn {
 
     display: inline-flex;
@@ -1156,13 +1239,15 @@ if (
 
     color: #ffffff;
 
-    border-radius: 7px;
+    border: none;
 
-    text-decoration: none;
+    border-radius: 7px;
 
     font-size: 14px;
 
     font-weight: 600;
+
+    cursor: pointer;
 
 }
 
@@ -1297,7 +1382,7 @@ if (
 
 
 <!-- =====================================================
-     ADD FORM
+     FORM
 ===================================================== -->
 
 <?php if ($form_open): ?>
@@ -1534,15 +1619,18 @@ if (
 
             <button
                 type="submit"
+                name="save_contact"
                 class="save-btn"
             >
 
                 <i class="fa-solid fa-save"></i>
 
                 <?php
+
                 echo $contact
                     ? 'Update'
                     : 'Save';
+
                 ?>
 
             </button>
@@ -1558,7 +1646,7 @@ if (
 
 
 <!-- =====================================================
-     NO FORM + NO CONTACT
+     NO CONTACT
 ===================================================== -->
 
 <?php elseif (!$contact): ?>
@@ -1638,11 +1726,13 @@ if (
             <br>
 
             <?php
+
             echo nl2br(
                 htmlspecialchars(
                     $contact['address']
                 )
             );
+
             ?>
 
         </div>
@@ -1661,9 +1751,11 @@ if (
             </strong>
 
             <?php
+
             echo htmlspecialchars(
                 $contact['city']
             );
+
             ?>
 
         </div>
@@ -1682,9 +1774,11 @@ if (
             </strong>
 
             <?php
+
             echo htmlspecialchars(
                 $contact['state']
             );
+
             ?>
 
         </div>
@@ -1703,9 +1797,11 @@ if (
             </strong>
 
             <?php
+
             echo htmlspecialchars(
                 $contact['pincode']
             );
+
             ?>
 
         </div>
@@ -1724,9 +1820,11 @@ if (
             </strong>
 
             <?php
+
             echo htmlspecialchars(
                 $contact['alternate_email']
             );
+
             ?>
 
         </div>
@@ -1755,9 +1853,11 @@ if (
             >
 
                 <?php
+
                 echo htmlspecialchars(
                     $contact['linkedin']
                 );
+
                 ?>
 
             </a>
@@ -1788,9 +1888,11 @@ if (
             >
 
                 <?php
+
                 echo htmlspecialchars(
                     $contact['github']
                 );
+
                 ?>
 
             </a>
@@ -1821,9 +1923,11 @@ if (
             >
 
                 <?php
+
                 echo htmlspecialchars(
                     $contact['website']
                 );
+
                 ?>
 
             </a>
@@ -1843,6 +1947,8 @@ if (
     <div class="contact-actions">
 
 
+        <!-- UPDATE -->
+
         <a
             href="contact.php?edit=1"
             class="update-contact-btn"
@@ -1855,17 +1961,28 @@ if (
         </a>
 
 
-        <a
-            href="contact.php?delete=1"
-            class="delete-contact-btn"
-            onclick="return confirm('Are you sure you want to delete your contact details?');"
+        <!-- DELETE DIRECTLY -->
+
+        <form
+            action="contact.php"
+            method="POST"
+            class="delete-contact-form"
+            onsubmit="return confirm('Are you sure you want to delete your contact details permanently?');"
         >
 
-            <i class="fa-solid fa-trash"></i>
+            <button
+                type="submit"
+                name="delete_contact"
+                class="delete-contact-btn"
+            >
 
-            Delete
+                <i class="fa-solid fa-trash"></i>
 
-        </a>
+                Delete
+
+            </button>
+
+        </form>
 
 
     </div>

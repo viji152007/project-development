@@ -892,3 +892,39 @@ button[name="upload"]:hover{
     justify-content: center;
     font-size: 55px;
 }
+/* SIDEBAR LINKS - EVENLY SPREAD */
+
+.sidebar {
+display: flex;
+flex-direction: column;
+height: 100vh;
+}
+
+.sidebar a {
+flex: 1;
+display: flex;
+align-items: center;
+}
+/* Fix only large screens */
+@media (min-width: 769px) {
+
+    html,
+    body {
+        height: auto !important;
+        min-height: 100%;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+    }
+
+    .content {
+        height: auto !important;
+        min-height: 100vh;
+        overflow: visible !important;
+    }
+
+    .dashboard-card {
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+}

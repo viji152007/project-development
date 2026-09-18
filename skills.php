@@ -6,8 +6,10 @@ session_start();
 ========================================= */
 
 if (!isset($_SESSION['username'])) {
+
     header("Location:login.php");
     exit();
+
 }
 
 
@@ -17,7 +19,15 @@ if (!isset($_SESSION['username'])) {
 
 include("config/db.php");
 
-$username = $_SESSION['username'];
+
+if (!isset($conn) || $conn->connect_error) {
+
+    die("Database connection failed.");
+
+}
+
+
+$username = trim($_SESSION['username']);
 
 
 /* =========================================
@@ -31,20 +41,123 @@ $stmt = $conn->prepare("
     LIMIT 1
 ");
 
+
+if (!$stmt) {
+
+    die("User query error: " . $conn->error);
+
+}
+
+
 $stmt->bind_param("s", $username);
+
 $stmt->execute();
 
 $result = $stmt->get_result();
+
 $user = $result->fetch_assoc();
 
 $stmt->close();
 
 
 if (!$user) {
+
     die("User not found");
+
 }
 
-$user_id = $user['id'];
+
+$user_id = (int)$user['id'];
+
+
+/* =========================================
+   DELETE SKILL
+   DIRECTLY FROM DATABASE
+========================================= */
+
+if (
+    $_SERVER['REQUEST_METHOD'] === 'POST' &&
+    isset($_POST['delete_skill'])
+) {
+
+
+    $skill_id = isset($_POST['skill_id'])
+        ? (int)$_POST['skill_id']
+        : 0;
+
+
+    if ($skill_id > 0) {
+
+
+        /*
+         * IMPORTANT:
+         *
+         * skill_id AND user_id are checked.
+         *
+         * So another user's skill cannot
+         * be deleted.
+         */
+
+        $stmt = $conn->prepare("
+            DELETE FROM skills
+            WHERE id = ?
+              AND user_id = ?
+        ");
+
+
+        if (!$stmt) {
+
+            die(
+                "Delete query error: " .
+                $conn->error
+            );
+
+        }
+
+
+        $stmt->bind_param(
+            "ii",
+            $skill_id,
+            $user_id
+        );
+
+
+        $stmt->execute();
+
+        $stmt->close();
+
+    }
+
+
+    /*
+     * Redirect after deletion.
+     *
+     * This prevents duplicate deletion
+     * when browser refreshes the page.
+     */
+
+    header("Location: skills.php?deleted=1");
+
+    exit();
+
+}
+
+
+/* =========================================
+   DELETE SUCCESS MESSAGE
+========================================= */
+
+$delete_success = false;
+
+
+if (
+    isset($_GET['deleted']) &&
+    $_GET['deleted'] === '1'
+) {
+
+    $delete_success = true;
+
+}
 
 
 /* =========================================
@@ -52,13 +165,31 @@ $user_id = $user['id'];
 ========================================= */
 
 $stmt = $conn->prepare("
-    SELECT id, skill_name, percentage
+    SELECT
+        id,
+        skill_name,
+        percentage
     FROM skills
     WHERE user_id = ?
     ORDER BY id DESC
 ");
 
-$stmt->bind_param("i", $user_id);
+
+if (!$stmt) {
+
+    die(
+        "Skills query error: " .
+        $conn->error
+    );
+
+}
+
+
+$stmt->bind_param(
+    "i",
+    $user_id
+);
+
 $stmt->execute();
 
 $skills = $stmt->get_result();
@@ -166,6 +297,35 @@ $skills = $stmt->get_result();
             border-radius: 8px;
 
             text-decoration: none;
+
+            font-weight: 600;
+
+        }
+
+
+        /* =========================================
+           DELETE SUCCESS MESSAGE
+        ========================================= */
+
+        .skill-delete-message {
+
+            width: 100%;
+
+            box-sizing: border-box;
+
+            padding: 12px 15px;
+
+            margin-bottom: 20px;
+
+            border-radius: 8px;
+
+            background: #dcfce7;
+
+            color: #166534;
+
+            border: 1px solid #bbf7d0;
+
+            font-size: 14px;
 
             font-weight: 600;
 
@@ -491,6 +651,22 @@ $skills = $stmt->get_result();
         </div>
 
 
+        <!-- =====================================
+             DELETE SUCCESS
+        ====================================== -->
+
+        <?php if ($delete_success): ?>
+
+            <div class="skill-delete-message">
+
+                <i class="fa-solid fa-circle-check"></i>
+
+                Skill deleted successfully.
+
+            </div>
+
+        <?php endif; ?>
+
 
         <!-- =====================================
              SKILLS
@@ -558,7 +734,6 @@ $skills = $stmt->get_result();
                         </div>
 
 
-
                         <!-- SKILL BAR -->
 
                         <div class="skill-bar">
@@ -571,7 +746,6 @@ $skills = $stmt->get_result();
                         </div>
 
 
-
                         <!-- EDIT + DELETE -->
 
                         <div class="skill-actions">
@@ -580,7 +754,7 @@ $skills = $stmt->get_result();
                             <!-- EDIT -->
 
                             <a
-                                href="edit_skill.php?id=<?= $skill['id']; ?>"
+                                href="edit_skill.php?id=<?= (int)$skill['id']; ?>"
                                 class="skill-edit-icon"
                                 title="Edit Skill"
                             >
@@ -590,25 +764,25 @@ $skills = $stmt->get_result();
                             </a>
 
 
-
-                            <!-- DELETE -->
+                            <!-- DELETE DIRECTLY -->
 
                             <form
-                                action="delete_skill.php"
+                                action="skills.php"
                                 method="POST"
                                 class="skill-delete-form"
-                                onsubmit="return confirm('Delete this skill?');"
+                                onsubmit="return confirm('Are you sure you want to delete this skill?');"
                             >
 
                                 <input
                                     type="hidden"
                                     name="skill_id"
-                                    value="<?= $skill['id']; ?>"
+                                    value="<?= (int)$skill['id']; ?>"
                                 >
 
 
                                 <button
                                     type="submit"
+                                    name="delete_skill"
                                     class="skill-delete-icon"
                                     title="Delete Skill"
                                 >

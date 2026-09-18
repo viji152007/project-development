@@ -39,11 +39,11 @@ include 'config/db.php';
 $user = null;
 
 
-/* Prefer user_id if available */
+/* Prefer user_id */
 
 if (isset($_SESSION['user_id'])) {
 
-    $user_id = $_SESSION['user_id'];
+    $user_id = (int)$_SESSION['user_id'];
 
     $stmt = $conn->prepare(
         "SELECT * FROM users WHERE id = ? LIMIT 1"
@@ -103,6 +103,27 @@ $profile_photo = $user['profile_photo'] ?? "";
 
 
 /* =====================================================
+   CONVERT DB PHOTO TO BASE64
+===================================================== */
+
+$profile_image = "";
+
+if (!empty($profile_photo)) {
+
+    $image_info = @getimagesizefromstring($profile_photo);
+
+    if ($image_info && !empty($image_info['mime'])) {
+
+        $profile_image =
+            "data:" .
+            $image_info['mime'] .
+            ";base64," .
+            base64_encode($profile_photo);
+    }
+}
+
+
+/* =====================================================
    SUCCESS MESSAGE
 ===================================================== */
 
@@ -141,6 +162,61 @@ if (isset($_SESSION['successMsg'])) {
 
     <link rel="stylesheet"
           href="css/style.css">
+
+
+    <style>
+
+        /* =====================================================
+           DASHBOARD PROFILE PHOTO
+        ===================================================== */
+
+        .dashboard-profile-img {
+
+            width: 140px !important;
+
+            height: 140px !important;
+
+            border-radius: 50% !important;
+
+            object-fit: cover !important;
+
+            display: block !important;
+
+            margin: 0 auto 20px auto !important;
+
+            border: 4px solid #ffffff !important;
+
+            box-shadow:
+                0 5px 15px rgba(0, 0, 0, 0.15) !important;
+        }
+
+
+        .dashboard-default-profile {
+
+            width: 140px !important;
+
+            height: 140px !important;
+
+            border-radius: 50% !important;
+
+            display: flex !important;
+
+            align-items: center !important;
+
+            justify-content: center !important;
+
+            margin: 0 auto 20px auto !important;
+
+            background: #e5e7eb !important;
+
+            color: #64748b !important;
+
+            font-size: 50px !important;
+
+            border: 4px solid #ffffff !important;
+        }
+
+    </style>
 
 </head>
 
@@ -203,11 +279,13 @@ if (isset($_SESSION['successMsg'])) {
         <span>About</span>
 
     </a>
-     <!-- CERTIFICATE -->
+
+
+    <!-- EDUCATION -->
 
     <a href="education.php">
 
-        <i class="fa-solid fa-user"></i>
+        <i class="fa-solid fa-graduation-cap"></i>
 
         <span>Education</span>
 
@@ -280,19 +358,15 @@ if (isset($_SESSION['successMsg'])) {
     </a>
 
 
+    <!-- SHARE PORTFOLIO -->
 
+    <a href="shareportfolio.php">
 
-        <!-- =====================================================
-     SHARE PORTFOLIO
-===================================================== -->
+        <i class="fa-solid fa-link"></i>
 
-<a href="shareportfolio.php">
+        <span>Share Portfolio</span>
 
-    <i class="fa-solid fa-link"></i>
-
-    <span>Share Portfolio</span>
-
-</a>
+    </a>
 
 
     <!-- LOGOUT -->
@@ -319,16 +393,16 @@ if (isset($_SESSION['successMsg'])) {
     <div class="dashboard-card">
 
 
-        <!-- PROFILE PHOTO -->
+        <!-- =================================================
+             PROFILE PHOTO FROM DATABASE
+        ================================================== -->
 
         <div class="dashboard-profile">
 
-            <?php if (!empty($profile_photo)) { ?>
+            <?php if ($profile_image != "") { ?>
 
                 <img
-                    src="uploads/profile/<?php
-                    echo htmlspecialchars($profile_photo);
-                    ?>"
+                    src="<?php echo htmlspecialchars($profile_image); ?>"
                     alt="Profile Photo"
                     class="dashboard-profile-img"
                 >
@@ -346,7 +420,9 @@ if (isset($_SESSION['successMsg'])) {
         </div>
 
 
-        <!-- WELCOME -->
+        <!-- =================================================
+             WELCOME
+        ================================================== -->
 
         <h1>
 

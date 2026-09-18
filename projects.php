@@ -61,7 +61,52 @@ $user_id = (int)$user['id'];
 
 
 /* =========================================
+   DELETE PARTICULAR PROJECT
+   CURRENT USER ONLY
+========================================= */
+
+if (
+    $_SERVER['REQUEST_METHOD'] === 'POST' &&
+    isset($_POST['delete_project'])
+) {
+
+    $project_id = isset($_POST['project_id'])
+        ? (int)$_POST['project_id']
+        : 0;
+
+
+    if ($project_id > 0) {
+
+        $stmt = $conn->prepare("
+            DELETE FROM projects
+            WHERE id = ?
+              AND user_id = ?
+        ");
+
+        if (!$stmt) {
+            die("Delete query error: " . $conn->error);
+        }
+
+        $stmt->bind_param(
+            "ii",
+            $project_id,
+            $user_id
+        );
+
+        $stmt->execute();
+
+        $stmt->close();
+    }
+
+
+    header("Location: projects.php?deleted=1");
+    exit();
+}
+
+
+/* =========================================
    GET PROJECTS
+   CURRENT USER ONLY
 ========================================= */
 
 $stmt = $conn->prepare("
@@ -467,12 +512,52 @@ $stmt->close();
 
             border: 1px solid #fecdd3;
 
+            cursor: pointer;
+
         }
 
 
         .delete-btn:hover {
 
             background: #ffe4e6;
+
+        }
+
+
+        /* =========================================
+           DELETE FORM
+        ========================================= */
+
+        .project-delete-form {
+
+            display: inline;
+
+            margin: 0;
+
+            padding: 0;
+
+        }
+
+
+        /* =========================================
+           DELETED MESSAGE
+        ========================================= */
+
+        .success-message {
+
+            margin-bottom: 20px;
+
+            padding: 12px 15px;
+
+            border-radius: 8px;
+
+            background: #ecfdf5;
+
+            border: 1px solid #a7f3d0;
+
+            color: #047857;
+
+            font-weight: 600;
 
         }
 
@@ -589,6 +674,13 @@ $stmt->close();
 
             }
 
+
+            .project-delete-form {
+
+                width: 100%;
+
+            }
+
         }
 
     </style>
@@ -617,10 +709,28 @@ $stmt->close();
 
 
         <!-- =====================================
+             SUCCESS MESSAGE
+        ====================================== -->
+
+        <?php if (isset($_GET['deleted']) && $_GET['deleted'] == '1'): ?>
+
+            <div class="success-message">
+
+                <i class="fa-solid fa-circle-check"></i>
+
+                Project deleted successfully.
+
+            </div>
+
+        <?php endif; ?>
+
+
+        <!-- =====================================
              PAGE HEADER
         ====================================== -->
 
         <div class="projects-header">
+
 
             <div class="projects-title">
 
@@ -633,10 +743,17 @@ $stmt->close();
             </div>
 
 
-    <a href="add_project.php" class="add-project-btn">
-    <i class="fa-solid fa-plus"></i>
-    Add Project
-</a>
+            <a
+                href="add_project.php"
+                class="add-project-btn"
+            >
+
+                <i class="fa-solid fa-plus"></i>
+
+                Add Project
+
+            </a>
+
 
         </div>
 
@@ -647,10 +764,12 @@ $stmt->close();
 
         <?php if (!empty($projects)): ?>
 
+
             <div class="projects-grid">
 
 
                 <?php foreach ($projects as $project): ?>
+
 
                     <div class="project-card">
 
@@ -727,6 +846,8 @@ $stmt->close();
                         <div class="project-actions">
 
 
+                            <!-- EDIT -->
+
                             <a
                                 href="edit_project.php?id=<?= (int)$project['id']; ?>"
                                 class="edit-btn"
@@ -739,23 +860,42 @@ $stmt->close();
                             </a>
 
 
-                            <a
-                                href="delete_project.php?id=<?= (int)$project['id']; ?>"
-                                class="delete-btn"
-                                onclick="return confirm('Are you sure you want to delete this project?');"
+                            <!-- DELETE -->
+
+                            <form
+                                action="projects.php"
+                                method="POST"
+                                class="project-delete-form"
+                                onsubmit="return confirm('Are you sure you want to delete this project?');"
                             >
 
-                                <i class="fa-solid fa-trash"></i>
+                                <input
+                                    type="hidden"
+                                    name="project_id"
+                                    value="<?= (int)$project['id']; ?>"
+                                >
 
-                                Delete
 
-                            </a>
+                                <button
+                                    type="submit"
+                                    name="delete_project"
+                                    class="delete-btn"
+                                >
+
+                                    <i class="fa-solid fa-trash"></i>
+
+                                    Delete
+
+                                </button>
+
+                            </form>
 
 
                         </div>
 
 
                     </div>
+
 
                 <?php endforeach; ?>
 

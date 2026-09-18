@@ -79,7 +79,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     else {
 
-
         /* =================================================
            CHECK USERNAME OR EMAIL
         ================================================= */
@@ -163,11 +162,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             else {
 
-                /*
-                 * Existing account is not verified.
-                 * Generate a new verification code.
-                 */
-
                 $verification_code = str_pad(
                     random_int(0, 999999),
                     6,
@@ -175,12 +169,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     STR_PAD_LEFT
                 );
 
-
                 $verification_expires = date(
                     "Y-m-d H:i:s",
                     time() + (10 * 60)
                 );
-
 
                 $hashed_password = password_hash(
                     $password,
@@ -214,68 +206,37 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                 if ($update->execute()) {
 
-
-                    /* =====================================
-                       SAVE EMAIL FOR VERIFY PAGE
-                    ===================================== */
-
                     $_SESSION["verify_email"] = $email;
-
-
-                    /* =====================================
-                       SEND EMAIL
-                    ===================================== */
 
                     $mail = new PHPMailer(true);
 
-
                     try {
 
-                        /* SMTP */
-
                         $mail->isSMTP();
-
                         $mail->Host = "smtp.gmail.com";
-
                         $mail->SMTPAuth = true;
-
                         $mail->Username = $mail_username;
-
                         $mail->Password = $mail_password;
-
                         $mail->SMTPSecure =
                             PHPMailer::ENCRYPTION_STARTTLS;
-
                         $mail->Port = 587;
-
                         $mail->Timeout = 10;
-
                         $mail->SMTPDebug = 0;
-
-
-                        /* Sender */
 
                         $mail->setFrom(
                             $mail_username,
                             "Personal Portfolio"
                         );
 
-
-                        /* Receiver */
-
                         $mail->addAddress(
                             $email,
                             $username
                         );
 
-
-                        /* Email */
-
                         $mail->isHTML(true);
 
                         $mail->Subject =
                             "Email Verification - Personal Portfolio";
-
 
                         $mail->Body = "
 
@@ -296,8 +257,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                                     Hello
                                     <strong>"
                                     . htmlspecialchars($username)
-                                    . "
-                                    </strong>,
+                                    . "</strong>,
                                 </p>
 
                                 <p>
@@ -313,11 +273,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                                         font-size:32px;
                                         font-weight:bold;
                                         letter-spacing:8px;
-                                    '>
-                                        "
+                                    '>"
                                         . $verification_code .
-                                        "
-                                    </span>
+                                    "</span>
 
                                 </div>
 
@@ -339,22 +297,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                         ";
 
-
                         $mail->AltBody =
                             "Your verification code is: "
-                            . $verification_code
-                            . ". This code expires in 10 minutes.";
-
+                            . $verification_code .
+                            ". This code expires in 10 minutes.";
 
                         $mail->send();
-
 
                         header(
                             "Location: verify_code.php"
                         );
 
                         exit();
-
 
                     }
 
@@ -364,9 +318,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                             "Unable to send verification email.";
 
                         $message_type = "error";
-
                     }
-
 
                 }
 
@@ -377,7 +329,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                     $message_type = "error";
                 }
-
 
                 $update->close();
             }
@@ -391,20 +342,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         else {
 
-
-            /* =============================================
-               PASSWORD HASH
-            ============================================= */
-
             $hashed_password = password_hash(
                 $password,
                 PASSWORD_DEFAULT
             );
-
-
-            /* =============================================
-               VERIFICATION CODE
-            ============================================= */
 
             $verification_code = str_pad(
                 random_int(0, 999999),
@@ -412,11 +353,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 "0",
                 STR_PAD_LEFT
             );
-
-
-            /* =============================================
-               EXPIRY - 10 MINUTES
-            ============================================= */
 
             $verification_expires = date(
                 "Y-m-d H:i:s",
@@ -426,11 +362,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             /* =============================================
                INSERT USER
-               
-               fullname       → NOT USED
-               profile_photo  → NOT USED
-               created_at     → DB DEFAULT
-               id             → AUTO INCREMENT
             ============================================= */
 
             $stmt = $conn->prepare(
@@ -472,46 +403,23 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             if ($stmt->execute()) {
 
-
-                /* =========================================
-                   SAVE EMAIL
-                ========================================= */
-
                 $_SESSION["verify_email"] = $email;
-
-
-                /* =========================================
-                   PHPMailer
-                ========================================= */
 
                 $mail = new PHPMailer(true);
 
-
                 try {
 
-                    /* SMTP */
-
                     $mail->isSMTP();
-
                     $mail->Host = "smtp.gmail.com";
-
                     $mail->SMTPAuth = true;
-
                     $mail->Username = $mail_username;
-
                     $mail->Password = $mail_password;
-
                     $mail->SMTPSecure =
                         PHPMailer::ENCRYPTION_STARTTLS;
-
                     $mail->Port = 587;
-
                     $mail->Timeout = 10;
-
                     $mail->SMTPDebug = 0;
 
-
-                    /* Sender */
 
                     $mail->setFrom(
                         $mail_username,
@@ -519,15 +427,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     );
 
 
-                    /* Receiver */
-
                     $mail->addAddress(
                         $email,
                         $username
                     );
 
-
-                    /* HTML EMAIL */
 
                     $mail->isHTML(true);
 
@@ -554,8 +458,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                                 Hello
                                 <strong>"
                                 . htmlspecialchars($username)
-                                . "
-                                </strong>,
+                                . "</strong>,
                             </p>
 
                             <p>
@@ -576,11 +479,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                                     font-size:32px;
                                     font-weight:bold;
                                     letter-spacing:8px;
-                                '>
-                                    "
+                                '>"
                                     . $verification_code .
-                                    "
-                                </span>
+                                "</span>
 
                             </div>
 
@@ -610,20 +511,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                     $mail->AltBody =
                         "Your verification code is: "
-                        . $verification_code
-                        . ". This code expires in 10 minutes.";
+                        . $verification_code .
+                        ". This code expires in 10 minutes.";
 
-
-                    /* =====================================
-                       SEND
-                    ===================================== */
 
                     $mail->send();
 
-
-                    /* =====================================
-                       GO VERIFY PAGE
-                    ===================================== */
 
                     header(
                         "Location: verify_code.php"
@@ -635,12 +528,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 }
 
                 catch (Exception $e) {
-
-
-                    /* =====================================
-                       EMAIL FAILED
-                       DELETE USER
-                    ===================================== */
 
                     $new_user_id = $stmt->insert_id;
 
@@ -655,7 +542,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     );
 
                     $delete->execute();
-
                     $delete->close();
 
 
@@ -723,6 +609,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             width: 100%;
             padding-right: 45px !important;
         }
+
+
+        /* =========================================
+           HIDE EDGE BROWSER DEFAULT EYE
+           OUR 👁 EYE WILL REMAIN
+        ========================================= */
+
+        input[type="password"]::-ms-reveal,
+        input[type="password"]::-ms-clear {
+            display: none;
+        }
+
 
         .eye-icon {
             position: absolute;
@@ -837,6 +735,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         required
                     >
 
+                    <!-- OUR EYE -->
+
                     <span
                         class="eye-icon"
                         onclick="togglePassword(
@@ -863,6 +763,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         placeholder="Confirm password"
                         required
                     >
+
+                    <!-- OUR EYE -->
 
                     <span
                         class="eye-icon"

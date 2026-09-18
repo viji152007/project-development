@@ -17,7 +17,6 @@ if (!isset($_SESSION['username'])) {
 
 require_once "config/db.php";
 
-
 if (!isset($conn) || $conn->connect_error) {
     die("Database connection failed.");
 }
@@ -54,6 +53,77 @@ if (!$user) {
 }
 
 $user_id = (int)$user['id'];
+
+
+/* =========================================
+   DELETE CERTIFICATE
+   DELETE DIRECTLY FROM THIS PAGE
+========================================= */
+
+if (
+    $_SERVER['REQUEST_METHOD'] === 'POST' &&
+    isset($_POST['delete_certificate'])
+) {
+
+    $certificate_id = isset($_POST['certificate_id'])
+        ? (int)$_POST['certificate_id']
+        : 0;
+
+
+    if ($certificate_id > 0) {
+
+        /*
+         * Delete only the certificate
+         * belonging to the logged-in user.
+         */
+
+        $stmt = $conn->prepare("
+            DELETE FROM certificates
+            WHERE id = ?
+              AND user_id = ?
+        ");
+
+        if (!$stmt) {
+            die("Delete query error: " . $conn->error);
+        }
+
+        $stmt->bind_param(
+            "ii",
+            $certificate_id,
+            $user_id
+        );
+
+        $stmt->execute();
+
+        $stmt->close();
+    }
+
+
+    /*
+     * Redirect back to certificates.php
+     * after deletion.
+     *
+     * This prevents duplicate deletion
+     * when the page is refreshed.
+     */
+
+    header("Location: certificates.php?deleted=1");
+    exit();
+}
+
+
+/* =========================================
+   DELETE SUCCESS MESSAGE
+========================================= */
+
+$delete_success = false;
+
+if (
+    isset($_GET['deleted']) &&
+    $_GET['deleted'] === '1'
+) {
+    $delete_success = true;
+}
 
 
 /* =========================================
@@ -211,6 +281,37 @@ $certificates = $stmt->get_result();
             background: #1976d2;
 
             transform: translateY(-1px);
+
+        }
+
+
+        /* =========================================
+           SUCCESS MESSAGE
+        ========================================= */
+
+        .certificate-success-message {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            margin-bottom: 22px;
+
+            padding: 13px 16px;
+
+            border-radius: 8px;
+
+            background: #f0fdf4;
+
+            color: #15803d;
+
+            border: 1px solid #bbf7d0;
+
+            font-size: 14px;
+
+            font-weight: 600;
 
         }
 
@@ -631,6 +732,23 @@ $certificates = $stmt->get_result();
 
 
         <!-- =====================================
+             DELETE SUCCESS MESSAGE
+        ====================================== -->
+
+        <?php if ($delete_success): ?>
+
+            <div class="certificate-success-message">
+
+                <i class="fa-solid fa-circle-check"></i>
+
+                Certificate deleted successfully.
+
+            </div>
+
+        <?php endif; ?>
+
+
+        <!-- =====================================
              CERTIFICATE LIST
         ====================================== -->
 
@@ -717,10 +835,10 @@ $certificates = $stmt->get_result();
                             </a>
 
 
-                            <!-- DELETE -->
+                            <!-- DELETE DIRECTLY -->
 
                             <form
-                                action="delete_certificate.php"
+                                action=""
                                 method="POST"
                                 class="certificate-delete-form"
                                 onsubmit="return confirm('Are you sure you want to delete this certificate?');"
@@ -735,6 +853,7 @@ $certificates = $stmt->get_result();
 
                                 <button
                                     type="submit"
+                                    name="delete_certificate"
                                     class="certificate-delete"
                                 >
 

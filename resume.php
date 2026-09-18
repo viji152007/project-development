@@ -1,4 +1,5 @@
 <?php
+
 session_start();
 
 require_once "config/db.php";
@@ -193,6 +194,7 @@ if (!empty($user['profile_photo'])) {
     /*
      * Check whether database value is an actual image BLOB.
      */
+
     if (
         is_string($profilePhoto) &&
         (
@@ -204,9 +206,11 @@ if (!empty($user['profile_photo'])) {
     ) {
 
         $finfo = new finfo(FILEINFO_MIME_TYPE);
+
         $mime = $finfo->buffer($profilePhoto);
 
         if ($mime) {
+
             $photo =
                 "data:" .
                 $mime .
@@ -225,6 +229,7 @@ if (!empty($user['profile_photo'])) {
         /*
          * If already a URL/data URL.
          */
+
         if (
             str_starts_with($photoPath, "http://") ||
             str_starts_with($photoPath, "https://") ||
@@ -251,6 +256,7 @@ if (!empty($user['profile_photo'])) {
                 if (file_exists($path)) {
 
                     $photo = $path;
+
                     break;
                 }
             }
@@ -287,6 +293,7 @@ if (!empty($user['fullname'])) {
 ?>
 
 <!DOCTYPE html>
+
 <html lang="en">
 
 <head>
@@ -304,6 +311,7 @@ if (!empty($user['fullname'])) {
 
 
     <!-- EXISTING SIDEBAR CSS -->
+
     <link
         rel="stylesheet"
         href="css/style.css"
@@ -311,6 +319,7 @@ if (!empty($user['fullname'])) {
 
 
     <!-- RESUME CSS -->
+
     <link
         rel="stylesheet"
         href="css/resume.css"
@@ -318,6 +327,7 @@ if (!empty($user['fullname'])) {
 
 
     <!-- FONT AWESOME -->
+
     <link
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
@@ -325,6 +335,7 @@ if (!empty($user['fullname'])) {
 
 
     <!-- HTML2PDF -->
+
     <script
         src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js">
     </script>
@@ -369,6 +380,7 @@ if (!empty($user['fullname'])) {
             gap: 15px;
         }
 
+
         .resume-toolbar h2 {
 
             margin: 0;
@@ -377,6 +389,7 @@ if (!empty($user['fullname'])) {
 
             font-size: 24px;
         }
+
 
         .resume-toolbar p {
 
@@ -410,6 +423,7 @@ if (!empty($user['fullname'])) {
 
             font-size: 13px;
         }
+
 
         .print-btn:hover {
 
@@ -462,7 +476,6 @@ if (!empty($user['fullname'])) {
 
         /* =====================================================
            PROFILE PHOTO AREA
-
            SMALL SQUARE PHOTO
         ===================================================== */
 
@@ -543,6 +556,7 @@ if (!empty($user['fullname'])) {
             flex: 1;
         }
 
+
         .header-details h1 {
 
             margin: 0;
@@ -603,6 +617,7 @@ if (!empty($user['fullname'])) {
 
             text-decoration: none;
         }
+
 
         .contact-line a:hover {
 
@@ -1071,19 +1086,6 @@ if (!empty($user['fullname'])) {
 
             </div>
 
-
-            <button
-                type="button"
-                class="print-btn"
-                onclick="downloadResume()"
-            >
-
-                <i class="fa-solid fa-download"></i>
-
-                Download PDF
-
-            </button>
-
         </div>
 
 
@@ -1157,7 +1159,9 @@ if (!empty($user['fullname'])) {
                     <?php if (!empty($user['education'])): ?>
 
                         <h2>
+
                             <?= e($user['education']); ?>
+
                         </h2>
 
                     <?php endif; ?>
@@ -1167,11 +1171,15 @@ if (!empty($user['fullname'])) {
 
                     <div class="contact-line">
 
+
                         <?php if (!empty($user['email'])): ?>
 
                             <span>
+
                                 <i class="fa-solid fa-envelope"></i>
+
                                 <?= e($user['email']); ?>
+
                             </span>
 
                         <?php endif; ?>
@@ -1180,8 +1188,11 @@ if (!empty($user['fullname'])) {
                         <?php if (!empty($user['phone'])): ?>
 
                             <span>
+
                                 <i class="fa-solid fa-phone"></i>
+
                                 <?= e($user['phone']); ?>
+
                             </span>
 
                         <?php endif; ?>
@@ -1193,11 +1204,15 @@ if (!empty($user['fullname'])) {
                         ): ?>
 
                             <span>
+
                                 <i class="fa-solid fa-location-dot"></i>
+
                                 <?= e($contact['city']); ?>
+
                             </span>
 
                         <?php endif; ?>
+
 
                     </div>
 
@@ -1205,6 +1220,7 @@ if (!empty($user['fullname'])) {
                     <!-- SOCIAL LINKS -->
 
                     <div class="contact-line">
+
 
                         <?php if (
                             $contact &&
@@ -1216,8 +1232,11 @@ if (!empty($user['fullname'])) {
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >
+
                                 <i class="fa-brands fa-linkedin"></i>
+
                                 LinkedIn
+
                             </a>
 
                         <?php endif; ?>
@@ -1233,8 +1252,11 @@ if (!empty($user['fullname'])) {
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >
+
                                 <i class="fa-brands fa-github"></i>
+
                                 GitHub
+
                             </a>
 
                         <?php endif; ?>
@@ -1250,11 +1272,15 @@ if (!empty($user['fullname'])) {
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >
+
                                 <i class="fa-solid fa-globe"></i>
+
                                 Website
+
                             </a>
 
                         <?php endif; ?>
+
 
                     </div>
 
@@ -1276,9 +1302,11 @@ if (!empty($user['fullname'])) {
                     </h3>
 
                     <p>
+
                         <?= nl2br(
                             e($user['career_objective'])
                         ); ?>
+
                     </p>
 
                 </section>
@@ -1303,7 +1331,9 @@ if (!empty($user['fullname'])) {
 
                         <div class="education-item">
 
+
                             <div class="education-top">
+
 
                                 <div>
 
@@ -1353,6 +1383,7 @@ if (!empty($user['fullname'])) {
 
                                         <div class="small-text">
 
+
                                             <?php if (
                                                 !empty(
                                                     $edu['course']
@@ -1394,9 +1425,11 @@ if (!empty($user['fullname'])) {
 
                                             <?php endif; ?>
 
+
                                         </div>
 
                                     <?php endif; ?>
+
 
                                 </div>
 
@@ -1412,6 +1445,7 @@ if (!empty($user['fullname'])) {
                                             $edu['start_year']
                                         ); ?>
 
+
                                         <?php if (
                                             !empty(
                                                 $edu['start_year']
@@ -1425,6 +1459,7 @@ if (!empty($user['fullname'])) {
 
                                         <?php endif; ?>
 
+
                                         <?= e(
                                             $edu['end_year']
                                         ); ?>
@@ -1432,6 +1467,7 @@ if (!empty($user['fullname'])) {
                                     </div>
 
                                 <?php endif; ?>
+
 
                             </div>
 
@@ -1443,6 +1479,7 @@ if (!empty($user['fullname'])) {
 
                                 <div class="education-result">
 
+
                                     <?php if (
                                         !empty(
                                             $edu['percentage']
@@ -1452,6 +1489,7 @@ if (!empty($user['fullname'])) {
                                         <span>
 
                                             Percentage:
+
                                             <?= e(
                                                 $edu[
                                                     'percentage'
@@ -1470,6 +1508,7 @@ if (!empty($user['fullname'])) {
                                         <span>
 
                                             Grade:
+
                                             <?= e(
                                                 $edu['grade']
                                             ); ?>
@@ -1478,9 +1517,11 @@ if (!empty($user['fullname'])) {
 
                                     <?php endif; ?>
 
+
                                 </div>
 
                             <?php endif; ?>
+
 
                         </div>
 
@@ -1516,9 +1557,11 @@ if (!empty($user['fullname'])) {
                             ): ?>
 
                                 <h4>
+
                                     <?= e(
                                         $project['title']
                                     ); ?>
+
                                 </h4>
 
                             <?php endif; ?>
@@ -1533,6 +1576,7 @@ if (!empty($user['fullname'])) {
                                 <div class="technologies">
 
                                     Technologies:
+
                                     <?= e(
                                         $project[
                                             'technologies'
@@ -1649,6 +1693,7 @@ if (!empty($user['fullname'])) {
                                 <p>
 
                                     Issued by:
+
                                     <?= e(
                                         $certificate[
                                             'issuer'
@@ -1853,6 +1898,8 @@ if (!empty($user['fullname'])) {
         <div class="resume-actions">
 
 
+            <!-- DOWNLOAD PDF -->
+
             <button
                 type="button"
                 class="action-btn download-btn"
@@ -1865,6 +1912,8 @@ if (!empty($user['fullname'])) {
 
             </button>
 
+
+            <!-- SHARE PDF -->
 
             <button
                 type="button"
@@ -1897,7 +1946,6 @@ function downloadResume()
 {
     const resume =
         document.getElementById("resumeContent");
-
 
     if (!resume) {
 
@@ -1992,87 +2040,201 @@ function downloadResume()
 
 
 /* =====================================================
-   SHARE RESUME
+   SHARE RESUME AS PDF FILE
 ===================================================== */
 
-function shareResume()
+async function shareResume()
 {
-    const shareData = {
+    const resume =
+        document.getElementById("resumeContent");
 
-        title:
-            <?= json_encode(
-                ($user['fullname'] ?? 'User') .
-                ' - Resume'
-            ); ?>,
 
-        text:
-            "View my professional resume",
+    if (!resume) {
 
-        url:
-            window.location.href
+        alert("Resume content not found.");
+
+        return;
+    }
+
+
+    if (typeof html2pdf === "undefined") {
+
+        alert(
+            "PDF library could not be loaded. Please check your internet connection."
+        );
+
+        return;
+    }
+
+
+    const fullname =
+        <?= json_encode(
+            $user['fullname'] ?? 'Resume'
+        ); ?>;
+
+
+    let filename =
+        String(fullname)
+            .replace(/[^a-z0-9]/gi, "_")
+            .replace(/_+/g, "_");
+
+
+    if (filename === "") {
+
+        filename = "Resume";
+    }
+
+
+    filename += "_Resume.pdf";
+
+
+    const options = {
+
+        margin: 0,
+
+        image: {
+
+            type: "jpeg",
+
+            quality: 0.98
+        },
+
+        html2canvas: {
+
+            scale: 2,
+
+            useCORS: true,
+
+            allowTaint: true,
+
+            backgroundColor: "#ffffff"
+        },
+
+        jsPDF: {
+
+            unit: "mm",
+
+            format: "a4",
+
+            orientation: "portrait"
+        },
+
+        pagebreak: {
+
+            mode: [
+                "css",
+                "legacy"
+            ]
+        }
     };
 
 
-    if (navigator.share) {
+    try {
 
-        navigator.share(shareData)
+        /*
+         * Create PDF Blob from ONLY resumeContent.
+         *
+         * Sidebar is outside resumeContent.
+         * Bottom buttons are also outside resumeContent.
+         *
+         * Therefore neither sidebar nor buttons
+         * will be included in the PDF.
+         */
 
-            .catch(function(error) {
+        const pdfBlob =
+            await html2pdf()
 
-                console.log(
-                    "Share cancelled:",
-                    error
-                );
+                .set({
+                    ...options,
+                    filename: filename
+                })
 
-            });
+                .from(resume)
 
-        return;
-    }
+                .outputPdf("blob");
 
 
-    if (
-        navigator.clipboard &&
-        window.isSecureContext
-    ) {
+        /*
+         * Convert PDF Blob into a File.
+         */
 
-        navigator.clipboard
+        const pdfFile =
+            new File(
+                [pdfBlob],
+                filename,
+                {
+                    type: "application/pdf"
+                }
+            );
 
-            .writeText(
-                window.location.href
-            )
 
-            .then(function() {
+        /*
+         * Check whether browser supports
+         * sharing files.
+         */
 
-                alert(
-                    "Resume link copied successfully!"
-                );
-
+        if (
+            navigator.share &&
+            navigator.canShare &&
+            navigator.canShare({
+                files: [pdfFile]
             })
+        ) {
 
-            .catch(function() {
+            await navigator.share({
 
-                showResumeLink();
+                title:
+                    String(fullname) +
+                    " - Resume",
+
+                text:
+                    "Please find my resume.",
+
+                files: [
+                    pdfFile
+                ]
 
             });
 
-        return;
+            return;
+        }
+
+
+        /*
+         * Browser does not support
+         * PDF file sharing.
+         */
+
+        alert(
+            "PDF sharing is not supported in this browser. Please use Download PDF."
+        );
+
+    } catch (error) {
+
+
+        /*
+         * User cancelled share popup.
+         */
+
+        if (
+            error &&
+            error.name === "AbortError"
+        ) {
+
+            return;
+        }
+
+
+        console.error(
+            "Resume PDF sharing failed:",
+            error
+        );
+
+
+        alert(
+            "Unable to share the resume PDF. Please try Download PDF."
+        );
     }
-
-
-    showResumeLink();
-}
-
-
-/* =====================================================
-   FALLBACK SHARE
-===================================================== */
-
-function showResumeLink()
-{
-    alert(
-        "Resume link:\n\n" +
-        window.location.href
-    );
 }
 
 </script>

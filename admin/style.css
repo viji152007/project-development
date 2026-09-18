@@ -1,0 +1,282 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    min-height: 100vh;
+}
+
+
+/* ================= SIDEBAR ================= */
+
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 250px;
+    height: 100vh;
+    background: #0b1d51;
+    padding-top: 20px;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-header {
+    padding: 0 15px 20px;
+}
+
+.sidebar h2 {
+    color: white;
+    text-align: center;
+    font-size: 20px;
+}
+
+.sidebar h2 i {
+    color: #00f2fe;
+    margin-right: 8px;
+}
+
+
+/* ================= MENU ================= */
+
+.sidebar nav {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.sidebar a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    color: white;
+    text-decoration: none;
+
+    padding: 15px 25px;
+
+    font-size: 16px;
+
+    transition: 0.3s;
+}
+
+.sidebar a i {
+    width: 22px;
+    text-align: center;
+}
+
+.sidebar a:hover {
+    background: #2563eb;
+    padding-left: 35px;
+}
+
+.sidebar a.active {
+    background: #2563eb;
+    border-left: 4px solid #00f2fe;
+}
+
+
+/* ================= MAIN CONTENT ================= */
+
+.main-content {
+    margin-left: 250px;
+    padding: 30px;
+    min-height: 100vh;
+}
+
+
+/* ================= HEADER ================= */
+
+.dashboard-header {
+    background: #ffffff;
+
+    padding: 25px 30px;
+
+    border-radius: 15px;
+
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dashboard-header h1 {
+    color: #0b1d51;
+    font-size: 28px;
+}
+
+.admin-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    background: #f1f5ff;
+
+    padding: 10px 15px;
+
+    border-radius: 8px;
+
+    color: #0b1d51;
+
+    font-weight: bold;
+}
+
+.admin-info i {
+    color: #2563eb;
+}
+
+
+/* ================= STATISTICS ================= */
+
+.dashboard-stats {
+    display: grid;
+
+    grid-template-columns: repeat(4, 1fr);
+
+    gap: 18px;
+
+    margin-top: 25px;
+}
+
+
+/* Small Cards */
+
+.stat-box {
+    background: #ffffff;
+
+    padding: 18px;
+
+    border-radius: 12px;
+
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.12);
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 14px;
+
+    transition: 0.3s;
+}
+
+.stat-box:hover {
+    transform: translateY(-5px);
+
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+}
+
+
+/* Icon */
+
+.stat-icon {
+    width: 45px;
+    height: 45px;
+
+    border-radius: 10px;
+
+    background: #e8f4ff;
+
+    color: #2563eb;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    font-size: 20px;
+}
+
+
+/* Text */
+
+.stat-info h3 {
+    color: #555;
+
+    font-size: 13px;
+
+    margin-bottom: 5px;
+}
+
+.stat-info p {
+    color: #0b1d51;
+
+    font-size: 24px;
+
+    font-weight: bold;
+}
+
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 1000px) {
+
+    .dashboard-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+}
+
+
+@media (max-width: 700px) {
+
+    .sidebar {
+        width: 210px;
+    }
+
+    .main-content {
+        margin-left: 210px;
+        padding: 20px;
+    }
+
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+}
+
+
+@media (max-width: 500px) {
+
+    .sidebar {
+        width: 70px;
+    }
+
+    .sidebar-header h2 {
+        font-size: 0;
+    }
+
+    .sidebar-header h2 i {
+        font-size: 20px;
+    }
+
+    .sidebar a {
+        justify-content: center;
+        padding: 15px 5px;
+    }
+
+    .sidebar a span {
+        display: none;
+    }
+
+    .sidebar a:hover {
+        padding-left: 5px;
+    }
+
+    .main-content {
+        margin-left: 70px;
+        padding: 15px;
+    }
+
+    .dashboard-stats {
+        grid-template-columns: 1fr;
+    }
+
+}
