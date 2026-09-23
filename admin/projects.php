@@ -1,7 +1,10 @@
 <?php
 session_start();
 
-/* Admin login check */
+/* =========================================
+   ADMIN LOGIN CHECK
+========================================= */
+
 if (
     !isset($_SESSION['admin_logged_in']) ||
     $_SESSION['admin_logged_in'] !== true
@@ -10,28 +13,100 @@ if (
     exit();
 }
 
+
+/* =========================================
+   DATABASE
+========================================= */
+
 require_once "../config/db.php";
 
 
-/* Get ALL projects from ALL existing users */
-$sql = "
-    SELECT
-        p.id,
-        p.title,
-        p.description,
-        p.technologies,
-        p.demo_link,
-        p.user_id,
-        u.fullname,
-        u.username,
-        u.email
-    FROM projects p
-    INNER JOIN users u
-        ON p.user_id = u.id
-    ORDER BY p.id DESC
-";
+/* =========================================
+   SEARCH
+========================================= */
 
-$result = $conn->query($sql);
+$search = $_GET['search'] ?? '';
+
+if ($search !== '') {
+
+    $searchTerm = "%" . $search . "%";
+
+    $stmt = $conn->prepare("
+        SELECT *
+        FROM projects
+        WHERE title LIKE ?
+           OR description LIKE ?
+        ORDER BY id DESC
+    ");
+
+    if (!$stmt) {
+        die("Search query error: " . $conn->error);
+    }
+
+    $stmt->bind_param(
+        "ss",
+        $searchTerm,
+        $searchTerm
+    );
+
+    $stmt->execute();
+
+    $result = $stmt->get_result();
+
+} else {
+
+    $result = $conn->query("
+        SELECT *
+        FROM projects
+        ORDER BY id DESC
+    ");
+
+    if (!$result) {
+        die("Project query error: " . $conn->error);
+    }
+}
+
+
+/* =========================================
+   DELETE PROJECT
+========================================= */
+
+if (isset($_GET['delete'])) {
+
+    $project_id = (int)$_GET['delete'];
+
+    if ($project_id > 0) {
+
+        $stmt = $conn->prepare("
+            DELETE FROM projects
+            WHERE id = ?
+        ");
+
+        if (!$stmt) {
+            die("Delete query error: " . $conn->error);
+        }
+
+        $stmt->bind_param(
+            "i",
+            $project_id
+        );
+
+        if ($stmt->execute()) {
+
+            $stmt->close();
+
+            header("Location: projects.php?deleted=1");
+            exit();
+
+        } else {
+
+            $error = "Unable to delete project.";
+
+            $stmt->close();
+        }
+    }
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -41,206 +116,523 @@ $result = $conn->query($sql);
 
     <meta charset="UTF-8">
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Admin - Projects</title>
 
-    <!-- EXISTING CSS -->
-    <link rel="stylesheet" href="style.css">
 
-    <!-- Font Awesome -->
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- ADMIN CSS -->
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+
+    <!-- FONT AWESOME -->
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    >
+
+
+    <style>
+
+        /* =========================================
+           PAGE HEADER
+        ========================================= */
+
+        .page-header {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            margin-bottom: 25px;
+
+        }
+
+
+        .page-header h1 {
+
+            margin: 0;
+
+        }
+
+
+        /* =========================================
+           SEARCH
+        ========================================= */
+
+        .search-box {
+
+            display: flex;
+
+            gap: 10px;
+
+            margin-bottom: 20px;
+
+        }
+
+
+        .search-box input {
+
+            padding: 11px 15px;
+
+            width: 320px;
+
+            border: 1px solid #ddd;
+
+            border-radius: 6px;
+
+        }
+
+
+        .search-box button {
+
+            padding: 11px 18px;
+
+            border: none;
+
+            border-radius: 6px;
+
+            background: #0077ff;
+
+            color: white;
+
+            cursor: pointer;
+
+        }
+
+
+        .search-box button:hover {
+
+            background: #005fcc;
+
+        }
+
+
+        /* =========================================
+           PROJECT TABLE
+        ========================================= */
+
+        .projects-table {
+
+            width: 100%;
+
+            border-collapse: collapse;
+
+            background: white;
+
+            border-radius: 10px;
+
+            overflow: hidden;
+
+        }
+
+
+        .projects-table th,
+        .projects-table td {
+
+            padding: 14px;
+
+            border-bottom: 1px solid #eee;
+
+            text-align: left;
+
+        }
+
+
+        .projects-table th {
+
+            background: #0d1b2a;
+
+            color: white;
+
+        }
+
+
+        /* =========================================
+           PROJECT NAME
+        ========================================= */
+
+        .project-name {
+
+            font-weight: 600;
+
+            color: #111827;
+
+        }
+
+
+        /* =========================================
+           VIEW BUTTON
+        ========================================= */
+
+        .view-btn {
+
+            background: #0077ff;
+
+            color: white;
+
+            padding: 7px 11px;
+
+            border-radius: 5px;
+
+            text-decoration: none;
+
+            margin-right: 5px;
+
+        }
+
+
+        .view-btn:hover {
+
+            background: #005fcc;
+
+        }
+
+
+        /* =========================================
+           DELETE BUTTON
+        ========================================= */
+
+        .delete-btn {
+
+            background: #dc3545;
+
+            color: white;
+
+            padding: 7px 11px;
+
+            border-radius: 5px;
+
+            text-decoration: none;
+
+        }
+
+
+        .delete-btn:hover {
+
+            background: #bb2d3b;
+
+        }
+
+
+        /* =========================================
+           SUCCESS MESSAGE
+        ========================================= */
+
+        .success {
+
+            background: #d4edda;
+
+            color: #155724;
+
+            padding: 12px;
+
+            margin-bottom: 15px;
+
+            border-radius: 6px;
+
+        }
+
+
+        /* =========================================
+           ERROR MESSAGE
+        ========================================= */
+
+        .error {
+
+            background: #f8d7da;
+
+            color: #842029;
+
+            padding: 12px;
+
+            margin-bottom: 15px;
+
+            border-radius: 6px;
+
+        }
+
+    </style>
 
 </head>
 
+
 <body>
 
-<?php include "sidebar.php"; ?>
+
+<div class="dashboard-container">
 
 
-<div class="content">
+    <!-- =========================================
+         SIDEBAR
+    ========================================= -->
 
-    <div class="card">
-
-        <h2>
-            <i class="fa-solid fa-folder-open"></i>
-            Projects
-        </h2>
-
-        <p>
-            All projects added by registered users
-        </p>
+    <?php include "sidebar.php"; ?>
 
 
-        <?php if ($result && $result->num_rows > 0): ?>
+    <!-- =========================================
+         MAIN CONTENT
+    ========================================= -->
 
-            <div style="overflow-x:auto;">
-
-                <table style="
-                    width:100%;
-                    border-collapse:collapse;
-                    margin-top:20px;
-                ">
-
-                    <thead>
-
-                        <tr style="
-                            background:#0b1d51;
-                            color:white;
-                        ">
-
-                            <th style="padding:12px;">#</th>
-
-                            <th style="padding:12px;">
-                                User
-                            </th>
-
-                            <th style="padding:12px;">
-                                Project Title
-                            </th>
-
-                            <th style="padding:12px;">
-                                Description
-                            </th>
-
-                            <th style="padding:12px;">
-                                Technologies
-                            </th>
-
-                            <th style="padding:12px;">
-                                Demo
-                            </th>
-
-                        </tr>
-
-                    </thead>
+    <main class="main-content">
 
 
-                    <tbody>
+        <!-- =====================================
+             HEADER
+        ====================================== -->
 
-                    <?php
-                    $count = 1;
+        <div class="page-header">
 
-                    while ($row = $result->fetch_assoc()):
-                    ?>
+            <h1>
 
-                        <tr style="
-                            border-bottom:1px solid #ddd;
-                        ">
+                <i class="fa-solid fa-folder"></i>
 
-                            <td style="padding:12px;">
-                                <?php echo $count++; ?>
-                            </td>
+                Projects
 
+            </h1>
 
-                            <td style="padding:12px;">
-
-                                <strong>
-                                    <?php
-                                    echo htmlspecialchars(
-                                        $row['fullname']
-                                    );
-                                    ?>
-                                </strong>
-
-                                <br>
-
-                                <small>
-                                    @<?php
-                                    echo htmlspecialchars(
-                                        $row['username']
-                                    );
-                                    ?>
-                                </small>
-
-                                <br>
-
-                                <small>
-                                    <?php
-                                    echo htmlspecialchars(
-                                        $row['email']
-                                    );
-                                    ?>
-                                </small>
-
-                            </td>
+        </div>
 
 
-                            <td style="padding:12px;">
+        <!-- =====================================
+             SUCCESS MESSAGE
+        ====================================== -->
 
-                                <?php
-                                echo htmlspecialchars(
-                                    $row['title']
-                                );
-                                ?>
+        <?php if (isset($_GET['deleted'])): ?>
 
-                            </td>
+            <div class="success">
 
+                <i class="fa-solid fa-circle-check"></i>
 
-                            <td style="padding:12px;">
-
-                                <?php
-                                echo htmlspecialchars(
-                                    $row['description']
-                                );
-                                ?>
-
-                            </td>
-
-
-                            <td style="padding:12px;">
-
-                                <?php
-                                echo htmlspecialchars(
-                                    $row['technologies']
-                                );
-                                ?>
-
-                            </td>
-
-
-                            <td style="padding:12px;">
-
-                                <?php if (!empty($row['demo_link'])): ?>
-
-                                    <a
-                                        href="<?php echo htmlspecialchars($row['demo_link']); ?>"
-                                        target="_blank"
-                                    >
-                                        View
-                                    </a>
-
-                                <?php else: ?>
-
-                                    No Link
-
-                                <?php endif; ?>
-
-                            </td>
-
-                        </tr>
-
-                    <?php endwhile; ?>
-
-                    </tbody>
-
-                </table>
+                Project deleted successfully.
 
             </div>
 
-        <?php else: ?>
+        <?php endif; ?>
 
-            <p style="margin-top:20px;">
-                No projects found.
-            </p>
+
+        <!-- =====================================
+             ERROR MESSAGE
+        ====================================== -->
+
+        <?php if (isset($error)): ?>
+
+            <div class="error">
+
+                <i class="fa-solid fa-circle-exclamation"></i>
+
+                <?= htmlspecialchars($error); ?>
+
+            </div>
 
         <?php endif; ?>
 
-    </div>
+
+        <!-- =====================================
+             SEARCH
+        ====================================== -->
+
+        <form
+            method="GET"
+            class="search-box"
+        >
+
+            <input
+                type="text"
+                name="search"
+                placeholder="Search project name or description"
+                value="<?= htmlspecialchars($search); ?>"
+            >
+
+
+            <button type="submit">
+
+                <i class="fa-solid fa-search"></i>
+
+                Search
+
+            </button>
+
+        </form>
+
+
+        <!-- =====================================
+             PROJECT TABLE
+        ====================================== -->
+
+        <table class="projects-table">
+
+
+            <thead>
+
+                <tr>
+
+                    <th>ID</th>
+
+                    <th>Project Name</th>
+
+                    <th>User ID</th>
+
+                    <th>Description</th>
+
+                    <th>Action</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+
+            <?php if ($result && $result->num_rows > 0): ?>
+
+
+                <?php while ($project = $result->fetch_assoc()): ?>
+
+
+                    <tr>
+
+
+                        <!-- ID -->
+
+                        <td>
+
+                            <?= (int)$project['id']; ?>
+
+                        </td>
+
+
+                        <!-- PROJECT NAME -->
+
+                        <td class="project-name">
+
+                            <?php
+
+                            echo htmlspecialchars(
+                                $project['title'] ?? '-'
+                            );
+
+                            ?>
+
+                        </td>
+
+
+                        <!-- USER ID -->
+
+                        <td>
+
+                            <?= htmlspecialchars(
+                                $project['user_id'] ?? '-'
+                            ); ?>
+
+                        </td>
+
+
+                        <!-- DESCRIPTION -->
+
+                        <td>
+
+                            <?php
+
+                            $description =
+                                $project['description'] ?? '-';
+
+                            echo htmlspecialchars(
+                                mb_strimwidth(
+                                    $description,
+                                    0,
+                                    80,
+                                    "..."
+                                )
+                            );
+
+                            ?>
+
+                        </td>
+
+
+                        <!-- ACTION -->
+
+                        <td>
+
+
+                            <!-- VIEW -->
+
+                            <a
+                                href="view_project.php?id=<?= (int)$project['id']; ?>"
+                                class="view-btn"
+                                title="View Project"
+                            >
+
+                                <i class="fa-solid fa-eye"></i>
+
+                            </a>
+
+
+                            <!-- DELETE -->
+
+                            <a
+                                href="projects.php?delete=<?= (int)$project['id']; ?>"
+                                class="delete-btn"
+                                title="Delete Project"
+                                onclick="return confirm('Are you sure you want to delete this project?');"
+                            >
+
+                                <i class="fa-solid fa-trash"></i>
+
+                            </a>
+
+
+                        </td>
+
+
+                    </tr>
+
+
+                <?php endwhile; ?>
+
+
+            <?php else: ?>
+
+
+                <tr>
+
+                    <td
+                        colspan="5"
+                        style="text-align:center;"
+                    >
+
+                        No projects found.
+
+                    </td>
+
+                </tr>
+
+
+            <?php endif; ?>
+
+
+            </tbody>
+
+        </table>
+
+
+    </main>
 
 </div>
 
+
 </body>
+
 </html>

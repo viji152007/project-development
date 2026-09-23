@@ -29,6 +29,8 @@ $total_users = getCount($conn, "users");
 $total_projects = getCount($conn, "projects");
 $total_certificates = getCount($conn, "certificates");
 $total_education = getCount($conn, "education");
+$total_contact = getCount($conn, "contact");
+$total_skills = getCount($conn, "skills");
 ?>
 
 <!DOCTYPE html>
@@ -57,72 +59,7 @@ $total_education = getCount($conn, "education");
 
     <!-- ================= SIDEBAR ================= -->
 
-    <aside class="sidebar">
-
-        <div class="sidebar-header">
-
-            <h2>
-                <i class="fa-solid fa-user-shield"></i>
-                ADMIN PANEL
-            </h2>
-
-        </div>
-
-        <nav>
-
-            <a href="dashboard.php" class="active">
-                <i class="fa-solid fa-house"></i>
-                <span>Dashboard</span>
-            </a>
-
-            <a href="users.php">
-                <i class="fa-solid fa-users"></i>
-                <span>Users</span>
-            </a>
-
-            <a href="projects.php">
-                <i class="fa-solid fa-folder"></i>
-                <span>Projects</span>
-            </a>
-
-            <a href="certificates.php">
-                <i class="fa-solid fa-trophy"></i>
-                <span>Certificates</span>
-            </a>
-
-            <a href="education.php">
-                <i class="fa-solid fa-graduation-cap"></i>
-                <span>Education</span>
-            </a>
-               <a href="contact.php">
-                        <i class="fa-solid fa-envelope"></i>
-
-                <span>Contact</span>
-</a>
-                   <a href="skills.php">
-                            <i class="fa-solid fa-code"></i>
-
-                <span>Skills</span>
-</a>
-               <a href="resume.php">
-                        <i class="fas fa-file-alt"></i>
-
-                <span>Resume</span>
-            </a>
-
-            <a href="admin_profile.php">
-                <i class="fa-solid fa-user"></i>
-                <span>Admin Profile</span>
-            </a>
-
-            <a href="logout.php">
-                <i class="fa-solid fa-right-from-bracket"></i>
-                <span>Logout</span>
-            </a>
-
-        </nav>
-
-    </aside>
+    <?php include "sidebar.php"; ?>
 
 
     <!-- ================= MAIN CONTENT ================= -->
@@ -155,6 +92,7 @@ $total_education = getCount($conn, "education");
         <!-- ================= SMALL STATISTICS ================= -->
 
         <div class="dashboard-stats">
+
 
             <!-- Users -->
 
@@ -238,6 +176,49 @@ $total_education = getCount($conn, "education");
                 </div>
 
             </div>
+
+
+            <!-- Contact -->
+
+            <div class="stat-box">
+
+                <div class="stat-icon">
+                    <i class="fa-solid fa-envelope"></i>
+                </div>
+
+                <div class="stat-info">
+
+                    <h3>Contact</h3>
+
+                    <p>
+                        <?php echo $total_contact; ?>
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- Skills -->
+
+            <div class="stat-box">
+
+                <div class="stat-icon">
+                    <i class="fa-solid fa-code"></i>
+                </div>
+
+                <div class="stat-info">
+
+                    <h3>Skills</h3>
+
+                    <p>
+                        <?php echo $total_skills; ?>
+                    </p>
+
+                </div>
+
+            </div>
+
 
         </div>
 

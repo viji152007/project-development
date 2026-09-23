@@ -2,12 +2,8 @@
 
 include "config/db.php";
 
-
 /* =====================================================
    GET USERNAME FROM URL
-
-   Example:
-   /vijiii/portfolio/viji
 ===================================================== */
 
 $request_uri = parse_url(
@@ -16,7 +12,6 @@ $request_uri = parse_url(
 );
 
 $base_path = '/vijiii/portfolio/';
-
 $username = '';
 
 if (strpos($request_uri, $base_path) === 0) {
@@ -31,7 +26,6 @@ if (strpos($request_uri, $base_path) === 0) {
 
 }
 
-
 /* =====================================================
    OLD URL FALLBACK
 ===================================================== */
@@ -41,12 +35,9 @@ if (
     isset($_GET['user'])
 ) {
 
-    $username = trim(
-        $_GET['user']
-    );
+    $username = trim($_GET['user']);
 
 }
-
 
 if ($username === '') {
 
@@ -54,17 +45,11 @@ if ($username === '') {
 
 }
 
-
 /* =====================================================
    GET SECTION
 ===================================================== */
 
 $section = $_GET['section'] ?? 'about';
-
-
-/* =====================================================
-   ALLOWED SECTIONS
-===================================================== */
 
 $allowed_sections = [
     'about',
@@ -75,7 +60,6 @@ $allowed_sections = [
     'resume',
     'contact'
 ];
-
 
 if (
     !in_array(
@@ -89,9 +73,8 @@ if (
 
 }
 
-
 /* =====================================================
-   GET USER
+   GET PUBLIC USER
 ===================================================== */
 
 $stmt = $conn->prepare("
@@ -109,7 +92,6 @@ $stmt = $conn->prepare("
     LIMIT 1
 ");
 
-
 if (!$stmt) {
 
     die(
@@ -118,7 +100,6 @@ if (!$stmt) {
     );
 
 }
-
 
 $stmt->bind_param(
     "s",
@@ -129,7 +110,6 @@ $stmt->execute();
 
 $result = $stmt->get_result();
 
-
 if ($result->num_rows === 0) {
 
     $stmt->close();
@@ -138,21 +118,52 @@ if ($result->num_rows === 0) {
 
 }
 
-
 $user = $result->fetch_assoc();
 
 $stmt->close();
 
-
 /* =====================================================
-   USER ID
+   USER ID CONTROLS ALL PUBLIC DATA
 ===================================================== */
 
 $user_id = (int)$user['id'];
 
+/* =====================================================
+   PROFILE PHOTO - DATABASE BLOB
+===================================================== */
+
+function getProfilePhotoSrc($photo)
+{
+
+    if (empty($photo)) {
+
+        return '';
+
+    }
+
+    $finfo = new finfo(FILEINFO_MIME_TYPE);
+
+    $mime = $finfo->buffer($photo);
+
+    if (
+        !$mime ||
+        strpos($mime, 'image/') !== 0
+    ) {
+
+        return '';
+
+    }
+
+    return
+        'data:' .
+        $mime .
+        ';base64,' .
+        base64_encode($photo);
+
+}
 
 /* =====================================================
-   GET EDUCATION
+   GET EDUCATION - THIS USER ONLY
 ===================================================== */
 
 $education = null;
@@ -173,7 +184,6 @@ $stmt = $conn->prepare("
     ORDER BY id DESC
 ");
 
-
 if ($stmt) {
 
     $stmt->bind_param(
@@ -189,9 +199,8 @@ if ($stmt) {
 
 }
 
-
 /* =====================================================
-   GET SKILLS
+   GET SKILLS - THIS USER ONLY
 ===================================================== */
 
 $skills = null;
@@ -205,7 +214,6 @@ $stmt = $conn->prepare("
     WHERE user_id = ?
     ORDER BY id DESC
 ");
-
 
 if ($stmt) {
 
@@ -222,9 +230,8 @@ if ($stmt) {
 
 }
 
-
 /* =====================================================
-   GET PROJECTS
+   GET PROJECTS - THIS USER ONLY
 ===================================================== */
 
 $projects = null;
@@ -241,7 +248,6 @@ $stmt = $conn->prepare("
     ORDER BY id DESC
 ");
 
-
 if ($stmt) {
 
     $stmt->bind_param(
@@ -257,9 +263,8 @@ if ($stmt) {
 
 }
 
-
 /* =====================================================
-   GET CERTIFICATES
+   GET CERTIFICATES - THIS USER ONLY
 ===================================================== */
 
 $certificates = null;
@@ -276,7 +281,6 @@ $stmt = $conn->prepare("
     ORDER BY id DESC
 ");
 
-
 if ($stmt) {
 
     $stmt->bind_param(
@@ -292,9 +296,8 @@ if ($stmt) {
 
 }
 
-
 /* =====================================================
-   GET CONTACT DETAILS
+   GET CONTACT - THIS USER ONLY
 ===================================================== */
 
 $contacts = [];
@@ -315,7 +318,6 @@ $stmt = $conn->prepare("
     ORDER BY id DESC
 ");
 
-
 if ($stmt) {
 
     $stmt->bind_param(
@@ -327,7 +329,6 @@ if ($stmt) {
 
     $contact_result = $stmt->get_result();
 
-
     while (
         $contact_row =
         $contact_result->fetch_assoc()
@@ -337,11 +338,9 @@ if ($stmt) {
 
     }
 
-
     $stmt->close();
 
 }
-
 
 /* =====================================================
    SKILL ICON
@@ -354,7 +353,6 @@ function getSkillIcon($skillName)
         trim($skillName)
     );
 
-
     if (
         strpos($skill, 'html') !== false
     ) {
@@ -363,7 +361,6 @@ function getSkillIcon($skillName)
 
     }
 
-
     if (
         strpos($skill, 'css') !== false
     ) {
@@ -371,7 +368,6 @@ function getSkillIcon($skillName)
         return 'fa-brands fa-css3-alt';
 
     }
-
 
     if (
         strpos($skill, 'javascript') !== false ||
@@ -382,7 +378,6 @@ function getSkillIcon($skillName)
 
     }
 
-
     if (
         strpos($skill, 'php') !== false
     ) {
@@ -390,7 +385,6 @@ function getSkillIcon($skillName)
         return 'fa-brands fa-php';
 
     }
-
 
     if (
         strpos($skill, 'python') !== false
@@ -400,7 +394,6 @@ function getSkillIcon($skillName)
 
     }
 
-
     if (
         strpos($skill, 'java') !== false
     ) {
@@ -408,7 +401,6 @@ function getSkillIcon($skillName)
         return 'fa-brands fa-java';
 
     }
-
 
     if (
         strpos($skill, 'mysql') !== false ||
@@ -419,7 +411,6 @@ function getSkillIcon($skillName)
 
     }
 
-
     if (
         strpos($skill, 'github') !== false
     ) {
@@ -427,7 +418,6 @@ function getSkillIcon($skillName)
         return 'fa-brands fa-github';
 
     }
-
 
     if (
         strpos($skill, 'bootstrap') !== false
@@ -437,7 +427,6 @@ function getSkillIcon($skillName)
 
     }
 
-
     if (
         strpos($skill, 'react') !== false
     ) {
@@ -445,7 +434,6 @@ function getSkillIcon($skillName)
         return 'fa-brands fa-react';
 
     }
-
 
     if (
         strpos($skill, 'node') !== false
@@ -455,14 +443,12 @@ function getSkillIcon($skillName)
 
     }
 
-
     return 'fa-solid fa-star';
 
 }
 
-
 /* =====================================================
-   PORTFOLIO LINK
+   PUBLIC PORTFOLIO LINK
 ===================================================== */
 
 function portfolioLink(
@@ -486,494 +472,346 @@ function portfolioLink(
 
 <head>
 
-    <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>
-
-        <?php
-        echo htmlspecialchars(
-            $user['fullname']
-        );
-        ?>
-
-        - Portfolio
-
-    </title>
-
-
-    <!-- EXISTING WEBSITE CSS -->
-
-    <link
-        rel="stylesheet"
-        href="/vijiii/css/style.css"
-    >
-
-
-    <!-- FONT AWESOME -->
-
-    <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
-    >
-
-
-    <style>
-
-        /* =================================================
-           EDUCATION
-        ================================================= */
-
-        .portfolio-education-list {
-
-            display: flex;
-
-            flex-direction: column;
-
-            gap: 20px;
-
-            margin-top: 25px;
-
-        }
-
-
-        .portfolio-education-card {
-
-            background: #ffffff;
-
-            border: 1px solid #e5e7eb;
-
-            border-radius: 14px;
-
-            padding: 25px;
-
-            box-shadow:
-                0 4px 15px rgba(0,0,0,0.08);
-
-        }
-
-
-        .portfolio-education-card h3 {
-
-            margin: 0 0 8px;
-
-            font-size: 21px;
-
-            color: #111827;
-
-        }
-
-
-        .portfolio-education-card .institution {
-
-            margin: 0 0 20px;
-
-            font-size: 16px;
-
-            font-weight: 600;
-
-            color: #2196f3;
-
-        }
-
-
-        .education-detail {
-
-            display: flex;
-
-            flex-direction: column;
-
-            gap: 10px;
-
-            font-size: 14px;
-
-            color: #374151;
-
-        }
-
-
-        .education-detail-row {
-
-            padding: 9px 12px;
-
-            background: #f8fafc;
-
-            border-radius: 7px;
-
-        }
-
-
-        .education-detail-row strong {
-
-            color: #111827;
-
-            display: inline-block;
-
-            min-width: 125px;
-
-        }
-
-
-        /* =================================================
-           CONTACT
-        ================================================= */
-
-        .portfolio-contact-list {
-
-            display: flex;
-
-            flex-direction: column;
-
-            gap: 20px;
-
-            margin-top: 25px;
-
-        }
-
-
-        .portfolio-contact-card {
-
-            background: #ffffff;
-
-            border: 1px solid #e5e7eb;
-
-            border-radius: 14px;
-
-            padding: 25px;
-
-            box-shadow:
-                0 4px 15px rgba(0,0,0,0.08);
-
-        }
-
-
-        .portfolio-contact-card h3 {
-
-            margin: 0 0 18px;
-
-            font-size: 20px;
-
-            color: #111827;
-
-        }
-
-
-        .portfolio-contact-info {
-
-            display: flex;
-
-            flex-direction: column;
-
-            gap: 12px;
-
-        }
-
-
-        .portfolio-contact-row {
-
-            padding: 11px 14px;
-
-            background: #f8fafc;
-
-            border-radius: 8px;
-
-            font-size: 14px;
-
-            color: #374151;
-
-            line-height: 1.6;
-
-            word-break: break-word;
-
-        }
-
-
-        .portfolio-contact-row strong {
-
-            color: #111827;
-
-            display: inline-block;
-
-            min-width: 145px;
-
-        }
-
-
-        .portfolio-contact-row a {
-
-            color: #1976d2;
-
-            text-decoration: none;
-
-        }
-
-
-        .portfolio-contact-row a:hover {
-
-            text-decoration: underline;
-
-        }
-
-
-        .no-contact {
-
-            padding: 20px;
-
-            background: #f8fafc;
-
-            border-radius: 10px;
-
-            color: #4b5563;
-
-        }
-
-
-        /* =================================================
-           RESUME
-        ================================================= */
-
-        .portfolio-resume-box {
-
-            max-width: 900px;
-
-            margin: 0 auto;
-
-        }
-
-
-        .resume-description {
-
-            color: #4b5563;
-
-            font-size: 15px;
-
-            margin-top: 8px;
-
-        }
-
-
-        .resume-preview {
-
-            margin-top: 25px;
-
-            background: #ffffff;
-
-            border: 1px solid #e5e7eb;
-
-            border-radius: 14px;
-
-            padding: 35px 25px;
-
-            text-align: center;
-
-            box-shadow:
-                0 4px 15px rgba(0,0,0,0.08);
-
-        }
-
-
-        .resume-preview-icon {
-
-            width: 70px;
-
-            height: 70px;
-
-            margin: 0 auto 15px;
-
-            border-radius: 12px;
-
-            background: #fef2f2;
-
-            display: flex;
-
-            align-items: center;
-
-            justify-content: center;
-
-        }
-
-
-        .resume-preview-icon i {
-
-            font-size: 35px;
-
-            color: #dc2626;
-
-        }
-
-
-        .resume-preview h3 {
-
-            margin: 10px 0 8px;
-
-            color: #111827;
-
-            font-size: 20px;
-
-        }
-
-
-        .resume-preview p {
-
-            color: #6b7280;
-
-            font-size: 14px;
-
-            margin-bottom: 25px;
-
-        }
-
-
-        /* =================================================
-           RESUME BUTTONS
-        ================================================= */
-
-        .resume-actions {
-
-            display: flex;
-
-            justify-content: center;
-
-            align-items: center;
-
-            gap: 12px;
-
-            flex-wrap: wrap;
-
-        }
-
-
-        .resume-btn {
-
-            display: inline-flex;
-
-            align-items: center;
-
-            justify-content: center;
-
-            gap: 8px;
-
-            padding: 11px 18px;
-
-            border-radius: 8px;
-
-            border: none;
-
-            text-decoration: none;
-
-            font-size: 14px;
-
-            font-weight: 600;
-
-            cursor: pointer;
-
-            transition: 0.2s ease;
-
-        }
-
-
-        .resume-btn:hover {
-
-            transform: translateY(-2px);
-
-            opacity: 0.92;
-
-        }
-
-
-        .view-btn {
-
-            background: #2196f3;
-
-            color: #ffffff;
-
-        }
-
-
-        .download-btn {
-
-            background: #16a34a;
-
-            color: #ffffff;
-
-        }
-
-
-        .share-btn {
-
-            background: #7c3aed;
-
-            color: #ffffff;
-
-        }
-
-
-        /* =================================================
-           MOBILE
-        ================================================= */
-
-        @media (max-width: 700px) {
-
-            .portfolio-education-card,
-            .portfolio-contact-card {
-
-                padding: 18px;
-
-            }
-
-
-            .education-detail-row strong,
-            .portfolio-contact-row strong {
-
-                display: block;
-
-                margin-bottom: 4px;
-
-            }
-
-
-            .portfolio-resume-box {
-
-                width: 100%;
-
-            }
-
-
-            .resume-preview {
-
-                padding: 28px 18px;
-
-            }
-
-
-            .resume-actions {
-
-                flex-direction: column;
-
-                width: 100%;
-
-            }
-
-
-            .resume-btn {
-
-                width: 100%;
-
-            }
-
-        }
-
-    </style>
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>
+
+<?php
+echo htmlspecialchars(
+    $user['fullname']
+);
+?>
+
+- Portfolio
+
+</title>
+
+<link
+    rel="stylesheet"
+    href="/vijiii/css/style.css"
+>
+
+<link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+>
+
+<style>
+
+/* =================================================
+   EDUCATION
+================================================= */
+
+.portfolio-education-list {
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+    margin-top:25px;
+}
+
+.portfolio-education-card {
+    background:#ffffff;
+    border:1px solid #e5e7eb;
+    border-radius:14px;
+    padding:25px;
+    box-shadow:0 4px 15px rgba(0,0,0,0.08);
+}
+
+.portfolio-education-card h3 {
+    margin:0 0 8px;
+    font-size:21px;
+    color:#111827;
+}
+
+.portfolio-education-card .institution {
+    margin:0 0 20px;
+    font-size:16px;
+    font-weight:600;
+    color:#2196f3;
+}
+
+.education-detail {
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+.education-detail-row {
+    padding:9px 12px;
+    background:#f8fafc;
+    border-radius:7px;
+}
+
+.education-detail-row strong {
+    color:#111827;
+    display:inline-block;
+    min-width:125px;
+}
+
+/* =================================================
+   CONTACT
+================================================= */
+
+.portfolio-contact-list {
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+    margin-top:25px;
+}
+
+.portfolio-contact-card {
+    background:#ffffff;
+    border:1px solid #e5e7eb;
+    border-radius:14px;
+    padding:25px;
+    box-shadow:0 4px 15px rgba(0,0,0,0.08);
+}
+
+.portfolio-contact-card h3 {
+    margin:0 0 18px;
+    font-size:20px;
+    color:#111827;
+}
+
+.portfolio-contact-info {
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+}
+
+.portfolio-contact-row {
+    padding:11px 14px;
+    background:#f8fafc;
+    border-radius:8px;
+    font-size:14px;
+    color:#374151;
+    line-height:1.6;
+    word-break:break-word;
+}
+
+.portfolio-contact-row strong {
+    color:#111827;
+    display:inline-block;
+    min-width:145px;
+}
+
+.portfolio-contact-row a {
+    color:#1976d2;
+    text-decoration:none;
+}
+
+.no-contact {
+    padding:20px;
+    background:#f8fafc;
+    border-radius:10px;
+}
+
+/* =================================================
+   PUBLIC RESUME
+================================================= */
+
+.public-resume {
+    max-width:900px;
+    margin:0 auto;
+    background:#ffffff;
+    padding:35px;
+    border-radius:14px;
+    box-shadow:0 4px 15px rgba(0,0,0,0.08);
+}
+
+.public-resume-header {
+    text-align:center;
+    margin-bottom:25px;
+}
+
+.public-resume-header h1 {
+    margin-bottom:5px;
+}
+
+.public-resume-header p {
+    color:#6b7280;
+}
+
+.public-resume-profile {
+    display:flex;
+    align-items:center;
+    gap:20px;
+    margin-bottom:25px;
+}
+
+.public-resume-photo,
+.public-resume-default-photo {
+    width:110px;
+    height:110px;
+    border-radius:50%;
+}
+
+.public-resume-photo {
+    object-fit:cover;
+}
+
+.public-resume-default-photo {
+    background:#e5e7eb;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:40px;
+}
+
+.public-resume-profile h2 {
+    margin:0 0 5px;
+}
+
+.public-resume-profile p {
+    margin:0;
+    color:#6b7280;
+}
+
+.public-resume-info {
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+    padding:15px;
+    background:#f8fafc;
+    border-radius:10px;
+    margin-bottom:25px;
+}
+
+.public-resume-info span {
+    padding:8px 12px;
+}
+
+.public-resume-section {
+    margin-top:28px;
+}
+
+.public-resume-section h3 {
+    border-bottom:2px solid #00d9ff;
+    padding-bottom:8px;
+    margin-bottom:15px;
+}
+
+.public-resume-education,
+.public-resume-project {
+    background:#f8fafc;
+    padding:15px;
+    border-radius:10px;
+    margin-bottom:15px;
+}
+
+.public-resume-education h4,
+.public-resume-project h4 {
+    margin:0 0 8px;
+}
+
+.public-resume-education p,
+.public-resume-project p {
+    margin:7px 0;
+}
+
+.public-resume-skills {
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+}
+
+.public-resume-skill {
+    background:#eef2ff;
+    padding:8px 14px;
+    border-radius:20px;
+}
+
+.public-resume-contact p {
+    margin:8px 0;
+}
+
+.public-resume-actions {
+    display:flex;
+    justify-content:center;
+    gap:12px;
+    margin-top:30px;
+}
+
+.public-resume-btn {
+    border:none;
+    padding:11px 18px;
+    border-radius:8px;
+    color:#ffffff;
+    cursor:pointer;
+    font-weight:600;
+}
+
+.public-resume-download {
+    background:#16a34a;
+}
+
+.public-resume-share {
+    background:#7c3aed;
+}
+
+/* =================================================
+   PRINT
+================================================= */
+
+@media print {
+
+    .sidebar,
+    .public-resume-actions {
+        display:none !important;
+    }
+
+    .content {
+        margin:0 !important;
+        padding:0 !important;
+    }
+
+    .public-resume {
+        box-shadow:none;
+        max-width:100%;
+    }
+
+}
+
+/* =================================================
+   MOBILE
+================================================= */
+
+@media (max-width:700px) {
+
+    .portfolio-education-card,
+    .portfolio-contact-card {
+        padding:18px;
+    }
+
+    .public-resume {
+        padding:20px;
+    }
+
+    .public-resume-profile {
+        flex-direction:column;
+        text-align:center;
+    }
+
+    .public-resume-actions {
+        flex-direction:column;
+    }
+
+    .public-resume-btn {
+        width:100%;
+    }
+
+}
+
+</style>
 
 </head>
 
-
 <body>
-
 
 <!-- =====================================================
      PUBLIC PORTFOLIO SIDEBAR
@@ -981,19 +819,10 @@ function portfolioLink(
 
 <div class="sidebar">
 
-
-    <!-- TITLE -->
-
     <h2>
-
         <i class="fa-solid fa-user"></i>
-
         My Portfolio
-
     </h2>
-
-
-    <!-- ABOUT -->
 
     <a
         href="<?php
@@ -1003,22 +832,14 @@ function portfolioLink(
             );
         ?>"
         class="<?php
-            echo (
-                $section === 'about'
-            )
-            ? 'active'
-            : '';
+            echo $section === 'about'
+                ? 'active'
+                : '';
         ?>"
     >
-
         <i class="fa-solid fa-user"></i>
-
         <span>About</span>
-
     </a>
-
-
-    <!-- EDUCATION -->
 
     <a
         href="<?php
@@ -1028,22 +849,14 @@ function portfolioLink(
             );
         ?>"
         class="<?php
-            echo (
-                $section === 'education'
-            )
-            ? 'active'
-            : '';
+            echo $section === 'education'
+                ? 'active'
+                : '';
         ?>"
     >
-
         <i class="fa-solid fa-graduation-cap"></i>
-
         <span>Education</span>
-
     </a>
-
-
-    <!-- SKILLS -->
 
     <a
         href="<?php
@@ -1053,22 +866,14 @@ function portfolioLink(
             );
         ?>"
         class="<?php
-            echo (
-                $section === 'skills'
-            )
-            ? 'active'
-            : '';
+            echo $section === 'skills'
+                ? 'active'
+                : '';
         ?>"
     >
-
         <i class="fa-solid fa-code"></i>
-
         <span>Skills</span>
-
     </a>
-
-
-    <!-- PROJECTS -->
 
     <a
         href="<?php
@@ -1078,22 +883,14 @@ function portfolioLink(
             );
         ?>"
         class="<?php
-            echo (
-                $section === 'projects'
-            )
-            ? 'active'
-            : '';
+            echo $section === 'projects'
+                ? 'active'
+                : '';
         ?>"
     >
-
         <i class="fa-solid fa-folder"></i>
-
         <span>Projects</span>
-
     </a>
-
-
-    <!-- CERTIFICATES -->
 
     <a
         href="<?php
@@ -1103,28 +900,14 @@ function portfolioLink(
             );
         ?>"
         class="<?php
-            echo (
-                $section === 'certificates'
-            )
-            ? 'active'
-            : '';
+            echo $section === 'certificates'
+                ? 'active'
+                : '';
         ?>"
     >
-
         <i class="fa-solid fa-certificate"></i>
-
         <span>Certificates</span>
-
     </a>
-
-
-    <!-- =================================================
-         RESUME
-
-         IMPORTANT:
-         This stays inside portfolio.php.
-         Sidebar will NOT disappear.
-    ================================================= -->
 
     <a
         href="<?php
@@ -1134,22 +917,14 @@ function portfolioLink(
             );
         ?>"
         class="<?php
-            echo (
-                $section === 'resume'
-            )
-            ? 'active'
-            : '';
+            echo $section === 'resume'
+                ? 'active'
+                : '';
         ?>"
     >
-
         <i class="fa-solid fa-file-alt"></i>
-
         <span>Resume</span>
-
     </a>
-
-
-    <!-- CONTACT -->
 
     <a
         href="<?php
@@ -1159,20 +934,14 @@ function portfolioLink(
             );
         ?>"
         class="<?php
-            echo (
-                $section === 'contact'
-            )
-            ? 'active'
-            : '';
+            echo $section === 'contact'
+                ? 'active'
+                : '';
         ?>"
     >
-
         <i class="fa-solid fa-envelope"></i>
-
         <span>Contact</span>
-
     </a>
-
 
 </div>
 
@@ -1190,124 +959,87 @@ function portfolioLink(
 
 <?php if ($section === 'about') { ?>
 
+<div class="dashboard-card">
 
-    <div class="dashboard-card">
+    <h1>
+        <i class="fa-solid fa-user"></i>
+        About Me
+    </h1>
 
+    <?php
 
-        <h1>
+    $profilePhotoSrc = getProfilePhotoSrc(
+        $user['profile_photo']
+    );
 
+    ?>
+
+    <?php if ($profilePhotoSrc !== '') { ?>
+
+        <img
+            src="<?php
+                echo htmlspecialchars(
+                    $profilePhotoSrc
+                );
+            ?>"
+            width="150"
+            height="150"
+            class="profile-img"
+            alt="Profile Photo"
+        >
+
+    <?php } else { ?>
+
+        <div class="profile-img">
             <i class="fa-solid fa-user"></i>
+        </div>
 
-            About Me
+    <?php } ?>
 
-        </h1>
+    <p>
+        <strong>Full Name:</strong>
 
+        <?php
+        echo htmlspecialchars(
+            $user['fullname']
+        );
+        ?>
+    </p>
 
-        <!-- PROFILE PHOTO -->
+    <p>
+        <strong>Email:</strong>
 
-        <?php if (
-            !empty(
-                $user['profile_photo']
+        <?php
+        echo htmlspecialchars(
+            $user['email']
+        );
+        ?>
+    </p>
+
+    <p>
+        <strong>Phone:</strong>
+
+        <?php
+        echo htmlspecialchars(
+            $user['phone']
+        );
+        ?>
+    </p>
+
+    <p>
+        <strong>Career Objective:</strong>
+        <br>
+
+        <?php
+        echo nl2br(
+            htmlspecialchars(
+                $user['career_objective'] ?? ''
             )
-        ) { ?>
+        );
+        ?>
+    </p>
 
-            <img
-                src="/vijiii/uploads/profile/<?php
-                    echo htmlspecialchars(
-                        $user['profile_photo']
-                    );
-                ?>"
-                width="150"
-                height="150"
-                class="profile-img"
-                alt="Profile Photo"
-            >
-
-        <?php } else { ?>
-
-            <div class="profile-img">
-
-                <i class="fa-solid fa-user"></i>
-
-            </div>
-
-        <?php } ?>
-
-
-        <!-- FULL NAME -->
-
-        <p>
-
-            <strong>
-                Full Name:
-            </strong>
-
-            <?php
-            echo htmlspecialchars(
-                $user['fullname'] ?? ''
-            );
-            ?>
-
-        </p>
-
-
-        <!-- EMAIL -->
-
-        <p>
-
-            <strong>
-                Email:
-            </strong>
-
-            <?php
-            echo htmlspecialchars(
-                $user['email'] ?? ''
-            );
-            ?>
-
-        </p>
-
-
-        <!-- PHONE -->
-
-        <p>
-
-            <strong>
-                Phone:
-            </strong>
-
-            <?php
-            echo htmlspecialchars(
-                $user['phone'] ?? ''
-            );
-            ?>
-
-        </p>
-
-
-        <!-- CAREER OBJECTIVE -->
-
-        <p>
-
-            <strong>
-                Career Objective:
-            </strong>
-
-            <br>
-
-            <?php
-            echo nl2br(
-                htmlspecialchars(
-                    $user['career_objective'] ?? ''
-                )
-            );
-            ?>
-
-        </p>
-
-
-    </div>
-
+</div>
 
 <?php } ?>
 
@@ -1318,232 +1050,191 @@ function portfolioLink(
 
 <?php if ($section === 'education') { ?>
 
+<div class="dashboard-card">
 
-    <div class="dashboard-card">
+    <h1>
+        <i class="fa-solid fa-graduation-cap"></i>
+        Education
+    </h1>
 
+    <?php if (
+        $education &&
+        $education->num_rows > 0
+    ) { ?>
 
-        <h1>
+        <div class="portfolio-education-list">
 
-            <i class="fa-solid fa-graduation-cap"></i>
+            <?php while (
+                $edu =
+                $education->fetch_assoc()
+            ) { ?>
 
-            Education
+                <div class="portfolio-education-card">
 
-        </h1>
+                    <h3>
+                        <i class="fa-solid fa-graduation-cap"></i>
 
+                        <?php
+                        echo htmlspecialchars(
+                            $edu['education_type']
+                        );
+                        ?>
+                    </h3>
 
-        <?php if (
-            $education &&
-            $education->num_rows > 0
-        ) { ?>
+                    <p class="institution">
 
+                        <?php
+                        echo htmlspecialchars(
+                            $edu['institution_name']
+                        );
+                        ?>
 
-            <div class="portfolio-education-list">
+                    </p>
 
+                    <div class="education-detail">
 
-                <?php while (
-                    $edu = $education->fetch_assoc()
-                ) { ?>
+                        <?php if (
+                            !empty($edu['course'])
+                        ) { ?>
 
+                            <div class="education-detail-row">
 
-                    <div class="portfolio-education-card">
+                                <strong>
+                                    Course:
+                                </strong>
 
-
-                        <!-- EDUCATION TYPE -->
-
-                        <h3>
-
-                            <i class="fa-solid fa-graduation-cap"></i>
-
-                            <?php
-                            echo htmlspecialchars(
-                                $edu['education_type']
-                            );
-                            ?>
-
-                        </h3>
-
-
-                        <!-- INSTITUTION -->
-
-                        <p class="institution">
-
-                            <?php
-                            echo htmlspecialchars(
-                                $edu['institution_name']
-                            );
-                            ?>
-
-                        </p>
-
-
-                        <!-- DETAILS -->
-
-                        <div class="education-detail">
-
-
-                            <?php if (
-                                !empty(
+                                <?php
+                                echo htmlspecialchars(
                                     $edu['course']
-                                )
-                            ) { ?>
+                                );
+                                ?>
 
-                                <div class="education-detail-row">
+                            </div>
 
-                                    <strong>
-                                        Course:
-                                    </strong>
-
-                                    <?php
-                                    echo htmlspecialchars(
-                                        $edu['course']
-                                    );
-                                    ?>
-
-                                </div>
-
-                            <?php } ?>
+                        <?php } ?>
 
 
-                            <?php if (
-                                !empty(
+                        <?php if (
+                            !empty($edu['department'])
+                        ) { ?>
+
+                            <div class="education-detail-row">
+
+                                <strong>
+                                    Department:
+                                </strong>
+
+                                <?php
+                                echo htmlspecialchars(
                                     $edu['department']
-                                )
-                            ) { ?>
+                                );
+                                ?>
 
-                                <div class="education-detail-row">
+                            </div>
 
-                                    <strong>
-                                        Department:
-                                    </strong>
-
-                                    <?php
-                                    echo htmlspecialchars(
-                                        $edu['department']
-                                    );
-                                    ?>
-
-                                </div>
-
-                            <?php } ?>
+                        <?php } ?>
 
 
-                            <?php if (
-                                !empty(
+                        <?php if (
+                            !empty($edu['start_year'])
+                        ) { ?>
+
+                            <div class="education-detail-row">
+
+                                <strong>
+                                    Start Year:
+                                </strong>
+
+                                <?php
+                                echo htmlspecialchars(
                                     $edu['start_year']
-                                )
-                            ) { ?>
+                                );
+                                ?>
 
-                                <div class="education-detail-row">
+                            </div>
 
-                                    <strong>
-                                        Start Year:
-                                    </strong>
-
-                                    <?php
-                                    echo htmlspecialchars(
-                                        $edu['start_year']
-                                    );
-                                    ?>
-
-                                </div>
-
-                            <?php } ?>
+                        <?php } ?>
 
 
-                            <?php if (
-                                !empty(
+                        <?php if (
+                            !empty($edu['end_year'])
+                        ) { ?>
+
+                            <div class="education-detail-row">
+
+                                <strong>
+                                    End Year:
+                                </strong>
+
+                                <?php
+                                echo htmlspecialchars(
                                     $edu['end_year']
-                                )
-                            ) { ?>
+                                );
+                                ?>
 
-                                <div class="education-detail-row">
+                            </div>
 
-                                    <strong>
-                                        End Year:
-                                    </strong>
-
-                                    <?php
-                                    echo htmlspecialchars(
-                                        $edu['end_year']
-                                    );
-                                    ?>
-
-                                </div>
-
-                            <?php } ?>
+                        <?php } ?>
 
 
-                            <?php if (
-                                !empty(
+                        <?php if (
+                            !empty($edu['percentage'])
+                        ) { ?>
+
+                            <div class="education-detail-row">
+
+                                <strong>
+                                    Percentage / CGPA:
+                                </strong>
+
+                                <?php
+                                echo htmlspecialchars(
                                     $edu['percentage']
-                                )
-                            ) { ?>
+                                );
+                                ?>
 
-                                <div class="education-detail-row">
+                            </div>
 
-                                    <strong>
-                                        Percentage / CGPA:
-                                    </strong>
-
-                                    <?php
-                                    echo htmlspecialchars(
-                                        $edu['percentage']
-                                    );
-                                    ?>
-
-                                </div>
-
-                            <?php } ?>
+                        <?php } ?>
 
 
-                            <?php if (
-                                !empty(
+                        <?php if (
+                            !empty($edu['grade'])
+                        ) { ?>
+
+                            <div class="education-detail-row">
+
+                                <strong>
+                                    Grade:
+                                </strong>
+
+                                <?php
+                                echo htmlspecialchars(
                                     $edu['grade']
-                                )
-                            ) { ?>
+                                );
+                                ?>
 
-                                <div class="education-detail-row">
+                            </div>
 
-                                    <strong>
-                                        Grade:
-                                    </strong>
-
-                                    <?php
-                                    echo htmlspecialchars(
-                                        $edu['grade']
-                                    );
-                                    ?>
-
-                                </div>
-
-                            <?php } ?>
-
-
-                        </div>
-
+                        <?php } ?>
 
                     </div>
 
+                </div>
 
-                <?php } ?>
+            <?php } ?>
 
+        </div>
 
-            </div>
+    <?php } else { ?>
 
+        <p>
+            No education details added yet.
+        </p>
 
-        <?php } else { ?>
+    <?php } ?>
 
-
-            <p>
-                No education details added yet.
-            </p>
-
-
-        <?php } ?>
-
-
-    </div>
-
+</div>
 
 <?php } ?>
 
@@ -1554,119 +1245,85 @@ function portfolioLink(
 
 <?php if ($section === 'skills') { ?>
 
+<div class="dashboard-card">
 
-    <div class="dashboard-card">
+    <h1>
+        <i class="fa-solid fa-code"></i>
+        My Skills
+    </h1>
 
+    <?php if (
+        $skills &&
+        $skills->num_rows > 0
+    ) { ?>
 
-        <h1>
+        <div class="skill-list">
 
-            <i class="fa-solid fa-code"></i>
+            <?php while (
+                $skill =
+                $skills->fetch_assoc()
+            ) {
 
-            My Skills
+                $percentage =
+                    (int)$skill['percentage'];
 
-        </h1>
+                $percentage =
+                    max(
+                        0,
+                        min(
+                            100,
+                            $percentage
+                        )
+                    );
 
+                $skillIcon =
+                    getSkillIcon(
+                        $skill['skill_name']
+                    );
 
-        <?php
-        if (
-            $skills &&
-            $skills->num_rows > 0
-        ) {
-        ?>
+            ?>
 
+                <div class="skill-item">
 
-            <div class="skill-list">
-
-
-                <?php
-                while (
-                    $skill =
-                    $skills->fetch_assoc()
-                ) {
-                ?>
-
-
-                    <?php
-
-                    $percentage =
-                        (int)
-                        $skill['percentage'];
-
-
-                    $percentage =
-                        max(
-                            0,
-                            min(
-                                100,
-                                $percentage
-                            )
+                    <i class="<?php
+                        echo htmlspecialchars(
+                            $skillIcon
                         );
+                    ?>"></i>
 
+                    <span>
 
-                    $skillIcon =
-                        getSkillIcon(
+                        <?php
+                        echo htmlspecialchars(
                             $skill['skill_name']
                         );
+                        ?>
 
-                    ?>
+                    </span>
 
+                    <small>
 
-                    <div class="skill-item">
+                        <?php
+                        echo $percentage;
+                        ?>%
 
+                    </small>
 
-                        <i
-                            class="<?php
-                                echo htmlspecialchars(
-                                    $skillIcon
-                                );
-                            ?>"
-                        ></i>
+                </div>
 
+            <?php } ?>
 
-                        <span>
+        </div>
 
-                            <?php
-                            echo htmlspecialchars(
-                                $skill['skill_name']
-                            );
-                            ?>
+    <?php } else { ?>
 
-                        </span>
+        <p>
+            No skills added yet.
+        </p>
 
+    <?php } ?>
 
-                        <small>
-
-                            <?php
-                            echo $percentage;
-                            ?>%
-
-                        </small>
-
-
-                    </div>
-
-
-                <?php } ?>
-
-
-            </div>
-
-
-        <?php
-        } else {
-        ?>
-
-
-            <p>
-                No skills added yet.
-            </p>
-
-
-        <?php } ?>
-
-
-    </div>
-
+</div>
 
 <?php } ?>
 
@@ -1677,157 +1334,120 @@ function portfolioLink(
 
 <?php if ($section === 'projects') { ?>
 
+<div class="dashboard-card">
 
-    <div class="dashboard-card">
+    <h1>
+        <i class="fa-solid fa-folder"></i>
+        My Projects
+    </h1>
 
+    <?php if (
+        $projects &&
+        $projects->num_rows > 0
+    ) { ?>
 
-        <h1>
+        <div class="portfolio-projects">
 
-            <i class="fa-solid fa-folder"></i>
+            <?php while (
+                $project =
+                $projects->fetch_assoc()
+            ) { ?>
 
-            My Projects
+                <div class="portfolio-project-card">
 
-        </h1>
+                    <h3>
 
+                        <?php
+                        echo htmlspecialchars(
+                            $project['title'] ?? ''
+                        );
+                        ?>
 
-        <?php
-        if (
-            $projects &&
-            $projects->num_rows > 0
-        ) {
-        ?>
+                    </h3>
 
+                    <?php if (
+                        !empty(
+                            $project['description']
+                        )
+                    ) { ?>
 
-            <div class="portfolio-projects">
-
-
-                <?php
-                while (
-                    $project =
-                    $projects->fetch_assoc()
-                ) {
-                ?>
-
-
-                    <div
-                        class="portfolio-project-card"
-                    >
-
-
-                        <h3>
+                        <p>
 
                             <?php
-                            echo htmlspecialchars(
-                                $project['title']
-                                ?? ''
+                            echo nl2br(
+                                htmlspecialchars(
+                                    $project['description']
+                                )
                             );
                             ?>
 
-                        </h3>
+                        </p>
+
+                    <?php } ?>
 
 
-                        <?php if (
-                            !empty(
-                                $project['description']
-                            )
-                        ) { ?>
+                    <?php if (
+                        !empty(
+                            $project['technologies']
+                        )
+                    ) { ?>
 
-                            <p>
+                        <p>
 
-                                <?php
-                                echo nl2br(
-                                    htmlspecialchars(
-                                        $project[
-                                            'description'
-                                        ]
-                                    )
-                                );
-                                ?>
+                            <strong>
+                                Technologies:
+                            </strong>
 
-                            </p>
-
-                        <?php } ?>
-
-
-                        <?php if (
-                            !empty(
+                            <?php
+                            echo htmlspecialchars(
                                 $project['technologies']
-                            )
-                        ) { ?>
+                            );
+                            ?>
 
-                            <p>
+                        </p>
 
-                                <strong>
-                                    Technologies:
-                                </strong>
+                    <?php } ?>
 
-                                <?php
+
+                    <?php if (
+                        !empty(
+                            $project['demo_link']
+                        )
+                    ) { ?>
+
+                        <a
+                            href="<?php
                                 echo htmlspecialchars(
-                                    $project[
-                                        'technologies'
-                                    ]
+                                    $project['demo_link']
                                 );
-                                ?>
+                            ?>"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="portfolio-project-link"
+                        >
 
-                            </p>
+                            <i class="fa-solid fa-eye"></i>
+                            View Project
 
-                        <?php } ?>
+                        </a>
 
+                    <?php } ?>
 
-                        <?php if (
-                            !empty(
-                                $project['demo_link']
-                            )
-                        ) { ?>
+                </div>
 
-                            <a
-                                href="<?php
-                                    echo htmlspecialchars(
-                                        $project[
-                                            'demo_link'
-                                        ]
-                                    );
-                                ?>"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                class="portfolio-project-link"
-                            >
+            <?php } ?>
 
-                                <i
-                                    class="fa-solid fa-eye"
-                                ></i>
+        </div>
 
-                                View Project
+    <?php } else { ?>
 
-                            </a>
+        <p>
+            No projects added yet.
+        </p>
 
-                        <?php } ?>
+    <?php } ?>
 
-
-                    </div>
-
-
-                <?php } ?>
-
-
-            </div>
-
-
-        <?php
-        } else {
-        ?>
-
-
-            <p>
-                No projects added yet.
-            </p>
-
-
-        <?php } ?>
-
-
-    </div>
-
+</div>
 
 <?php } ?>
 
@@ -1838,362 +1458,831 @@ function portfolioLink(
 
 <?php if ($section === 'certificates') { ?>
 
+<div class="dashboard-card">
 
-    <div class="dashboard-card">
+    <h1>
+        <i class="fa-solid fa-certificate"></i>
+        My Certificates
+    </h1>
 
+    <?php if (
+        $certificates &&
+        $certificates->num_rows > 0
+    ) { ?>
 
-        <h1>
+        <div class="portfolio-certificates">
 
-            <i class="fa-solid fa-certificate"></i>
+            <?php while (
+                $certificate =
+                $certificates->fetch_assoc()
+            ) { ?>
 
-            My Certificates
+                <div class="portfolio-certificate-card">
 
-        </h1>
+                    <h3>
 
+                        <?php
+                        echo htmlspecialchars(
+                            $certificate[
+                                'certificate_name'
+                            ]
+                        );
+                        ?>
 
-        <?php
-        if (
-            $certificates &&
-            $certificates->num_rows > 0
-        ) {
-        ?>
-
-
-            <div class="portfolio-certificates">
-
-
-                <?php
-                while (
-                    $certificate =
-                    $certificates->fetch_assoc()
-                ) {
-                ?>
-
-
-                    <div
-                        class="portfolio-certificate-card"
-                    >
+                    </h3>
 
 
-                        <h3>
+                    <?php if (
+                        !empty(
+                            $certificate['issuer']
+                        )
+                    ) { ?>
+
+                        <p>
+
+                            <strong>
+                                Issued By:
+                            </strong>
 
                             <?php
                             echo htmlspecialchars(
-                                $certificate[
-                                    'certificate_name'
-                                ]
+                                $certificate['issuer']
                             );
                             ?>
 
-                        </h3>
+                        </p>
+
+                    <?php } ?>
 
 
-                        <?php if (
-                            !empty(
-                                $certificate['issuer']
-                            )
-                        ) { ?>
+                    <?php if (
+                        !empty(
+                            $certificate['certificate_url']
+                        )
+                    ) { ?>
 
-                            <p>
-
-                                <strong>
-                                    Issued By:
-                                </strong>
-
-                                <?php
+                        <a
+                            href="<?php
                                 echo htmlspecialchars(
                                     $certificate[
-                                        'issuer'
+                                        'certificate_url'
                                     ]
                                 );
-                                ?>
+                            ?>"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="portfolio-certificate-link"
+                        >
 
-                            </p>
+                            <i class="fa-solid fa-eye"></i>
+                            View Certificate
 
-                        <?php } ?>
+                        </a>
 
+                    <?php } ?>
 
-                        <?php if (
-                            !empty(
-                                $certificate[
-                                    'certificate_url'
-                                ]
-                            )
-                        ) { ?>
+                </div>
 
-                            <a
-                                href="<?php
-                                    echo htmlspecialchars(
-                                        $certificate[
-                                            'certificate_url'
-                                        ]
-                                    );
-                                ?>"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                class="portfolio-certificate-link"
-                            >
+            <?php } ?>
 
-                                <i
-                                    class="fa-solid fa-eye"
-                                ></i>
+        </div>
 
-                                View Certificate
+    <?php } else { ?>
 
-                            </a>
+        <p>
+            No certificates added yet.
+        </p>
 
-                        <?php } ?>
+    <?php } ?>
 
-
-                    </div>
-
-
-                <?php } ?>
-
-
-            </div>
-
-
-        <?php
-        } else {
-        ?>
-
-
-            <p>
-                No certificates added yet.
-            </p>
-
-
-        <?php } ?>
-
-
-    </div>
-
+</div>
 
 <?php } ?>
 
 
 <!-- =====================================================
-     RESUME
-
-     IMPORTANT:
-     Resume stays inside the SAME portfolio page.
-     Sidebar remains visible.
+     PUBLIC RESUME
 ===================================================== -->
 
 <?php if ($section === 'resume') { ?>
 
+<div class="public-resume">
 
-    <div class="dashboard-card portfolio-resume-box">
-
+    <div class="public-resume-header">
 
         <h1>
-
-            <i class="fa-solid fa-file-alt"></i>
-
-            Resume
-
+            <i class="fa-solid fa-file-lines"></i>
+            Professional Resume
         </h1>
 
+        <p>
 
-        <p class="resume-description">
-
-            View
-            <strong>
-
-                <?php
-                echo htmlspecialchars(
-                    $user['fullname']
-                );
-                ?>
-
-            </strong>
-
-            's resume.
+            <?php
+            echo htmlspecialchars(
+                $user['fullname']
+            );
+            ?>
 
         </p>
-
-
-        <!-- =================================================
-             RESUME PREVIEW BOX
-        ================================================= -->
-
-        <div class="resume-preview">
-
-
-            <div class="resume-preview-icon">
-
-                <i class="fa-solid fa-file-pdf"></i>
-
-            </div>
-
-
-            <h3>
-
-                <?php
-                echo htmlspecialchars(
-                    $user['fullname']
-                );
-                ?>
-
-                - Resume
-
-            </h3>
-
-
-            <p>
-
-                Click below to view, download or
-                share the resume.
-
-            </p>
-
-
-            <!-- =================================================
-                 BUTTONS
-            ================================================= -->
-
-            <div class="resume-actions">
-
-
-                <!-- VIEW RESUME -->
-
-                <a
-                    href="/vijiii/resume.php?user=<?php
-                        echo urlencode(
-                            $username
-                        );
-                    ?>"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="resume-btn view-btn"
-                >
-
-                    <i class="fa-solid fa-eye"></i>
-
-                    View Resume
-
-                </a>
-
-
-                <!-- DOWNLOAD -->
-
-                <a
-                    href="/vijiii/resume.php?user=<?php
-                        echo urlencode(
-                            $username
-                        );
-                    ?>"
-                    download
-                    class="resume-btn download-btn"
-                >
-
-                    <i class="fa-solid fa-download"></i>
-
-                    Download
-
-                </a>
-
-
-                <!-- SHARE -->
-
-                <button
-                    type="button"
-                    class="resume-btn share-btn"
-                    onclick="shareResume()"
-                >
-
-                    <i class="fa-solid fa-share-nodes"></i>
-
-                    Share
-
-                </button>
-
-
-            </div>
-
-
-        </div>
-
 
     </div>
 
 
-    <!-- =================================================
-         SHARE SCRIPT
-    ================================================= -->
+    <!-- PROFILE -->
 
-    <script>
+    <div class="public-resume-profile">
 
-        function shareResume() {
+        <?php
 
-            const resumeUrl =
-                window.location.origin +
-                "/vijiii/resume.php?user=<?php
-                    echo rawurlencode(
-                        $username
+        $profilePhotoSrc =
+            getProfilePhotoSrc(
+                $user['profile_photo']
+            );
+
+        ?>
+
+        <?php if ($profilePhotoSrc !== '') { ?>
+
+            <img
+                src="<?php
+                    echo htmlspecialchars(
+                        $profilePhotoSrc
                     );
-                ?>";
+                ?>"
+                class="public-resume-photo"
+                alt="Profile Photo"
+            >
+
+        <?php } else { ?>
+
+            <div class="public-resume-default-photo">
+
+                <i class="fa-solid fa-user"></i>
+
+            </div>
+
+        <?php } ?>
 
 
-            if (
-                navigator.share
-            ) {
+        <div>
 
-                navigator.share({
+            <h2>
 
-                    title:
-                        "<?php
+                <?php
+                echo htmlspecialchars(
+                    $user['fullname']
+                );
+                ?>
+
+            </h2>
+
+            <p>
+
+                @<?php
+                echo htmlspecialchars(
+                    $user['username']
+                );
+                ?>
+
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- BASIC INFORMATION -->
+
+    <div class="public-resume-info">
+
+        <?php if (
+            !empty(
+                $user['education']
+            )
+        ) { ?>
+
+            <span>
+
+                <i class="fa-solid fa-graduation-cap"></i>
+
+                <?php
+                echo htmlspecialchars(
+                    $user['education']
+                );
+                ?>
+
+            </span>
+
+        <?php } ?>
+
+
+        <?php if (
+            !empty(
+                $user['email']
+            )
+        ) { ?>
+
+            <span>
+
+                <i class="fa-solid fa-envelope"></i>
+
+                <?php
+                echo htmlspecialchars(
+                    $user['email']
+                );
+                ?>
+
+            </span>
+
+        <?php } ?>
+
+
+        <?php if (
+            !empty(
+                $user['phone']
+            )
+        ) { ?>
+
+            <span>
+
+                <i class="fa-solid fa-phone"></i>
+
+                <?php
+                echo htmlspecialchars(
+                    $user['phone']
+                );
+                ?>
+
+            </span>
+
+        <?php } ?>
+
+    </div>
+
+
+    <!-- ABOUT -->
+
+    <?php if (
+        !empty(
+            $user['career_objective']
+        )
+    ) { ?>
+
+        <div class="public-resume-section">
+
+            <h3>
+                ABOUT / CAREER OBJECTIVE
+            </h3>
+
+            <p>
+
+                <?php
+                echo nl2br(
+                    htmlspecialchars(
+                        $user['career_objective']
+                    )
+                );
+                ?>
+
+            </p>
+
+        </div>
+
+    <?php } ?>
+
+
+    <!-- EDUCATION -->
+
+    <div class="public-resume-section">
+
+        <h3>
+            EDUCATION
+        </h3>
+
+        <?php if (
+            $education &&
+            $education->num_rows > 0
+        ) { ?>
+
+            <?php while (
+                $edu =
+                $education->fetch_assoc()
+            ) { ?>
+
+                <div class="public-resume-education">
+
+                    <h4>
+
+                        <?php
                         echo htmlspecialchars(
-                            $user['fullname']
+                            $edu['education_type']
                         );
-                        ?> - Resume",
+                        ?>
 
-                    text:
-                        "View my resume",
+                    </h4>
 
-                    url:
-                        resumeUrl
+                    <strong>
 
-                }).catch(
-                    function(error) {
+                        <?php
+                        echo htmlspecialchars(
+                            $edu['institution_name']
+                        );
+                        ?>
 
-                        console.log(error);
+                    </strong>
 
-                    }
+
+                    <?php if (
+                        !empty(
+                            $edu['course']
+                        ) ||
+                        !empty(
+                            $edu['department']
+                        )
+                    ) { ?>
+
+                        <p>
+
+                            <?php
+                            echo htmlspecialchars(
+                                $edu['course']
+                            );
+                            ?>
+
+                            <?php if (
+                                !empty(
+                                    $edu['department']
+                                )
+                            ) { ?>
+
+                                &nbsp; | &nbsp;
+
+                                <?php
+                                echo htmlspecialchars(
+                                    $edu['department']
+                                );
+                                ?>
+
+                            <?php } ?>
+
+                        </p>
+
+                    <?php } ?>
+
+
+                    <?php if (
+                        !empty(
+                            $edu['start_year']
+                        ) ||
+                        !empty(
+                            $edu['end_year']
+                        )
+                    ) { ?>
+
+                        <p>
+
+                            <?php
+                            echo htmlspecialchars(
+                                $edu['start_year']
+                            );
+                            ?>
+
+                            -
+
+                            <?php
+                            echo htmlspecialchars(
+                                $edu['end_year']
+                            );
+                            ?>
+
+                        </p>
+
+                    <?php } ?>
+
+
+                    <?php if (
+                        !empty(
+                            $edu['grade']
+                        )
+                    ) { ?>
+
+                        <p>
+
+                            <strong>
+                                Grade:
+                            </strong>
+
+                            <?php
+                            echo htmlspecialchars(
+                                $edu['grade']
+                            );
+                            ?>
+
+                        </p>
+
+                    <?php } ?>
+
+
+                    <?php if (
+                        !empty(
+                            $edu['percentage']
+                        )
+                    ) { ?>
+
+                        <p>
+
+                            <strong>
+                                Percentage:
+                            </strong>
+
+                            <?php
+                            echo htmlspecialchars(
+                                $edu['percentage']
+                            );
+                            ?>
+
+                        </p>
+
+                    <?php } ?>
+
+                </div>
+
+            <?php } ?>
+
+        <?php } else { ?>
+
+            <p>
+                No education details added.
+            </p>
+
+        <?php } ?>
+
+    </div>
+
+
+    <!-- SKILLS -->
+
+    <?php if (
+        $skills &&
+        $skills->num_rows > 0
+    ) { ?>
+
+        <div class="public-resume-section">
+
+            <h3>
+                SKILLS
+            </h3>
+
+            <div class="public-resume-skills">
+
+                <?php while (
+                    $skill =
+                    $skills->fetch_assoc()
+                ) { ?>
+
+                    <span class="public-resume-skill">
+
+                        <i class="<?php
+                            echo htmlspecialchars(
+                                getSkillIcon(
+                                    $skill['skill_name']
+                                )
+                            );
+                        ?>"></i>
+
+                        <?php
+                        echo htmlspecialchars(
+                            $skill['skill_name']
+                        );
+                        ?>
+
+                        <?php if (
+                            isset(
+                                $skill['percentage']
+                            )
+                        ) { ?>
+
+                            -
+                            <?php
+                            echo (int)
+                                $skill['percentage'];
+                            ?>%
+
+                        <?php } ?>
+
+                    </span>
+
+                <?php } ?>
+
+            </div>
+
+        </div>
+
+    <?php } ?>
+
+
+    <!-- PROJECTS -->
+
+    <div class="public-resume-section">
+
+        <h3>
+            PROJECTS
+        </h3>
+
+        <?php if (
+            $projects &&
+            $projects->num_rows > 0
+        ) { ?>
+
+            <?php while (
+                $project =
+                $projects->fetch_assoc()
+            ) { ?>
+
+                <div class="public-resume-project">
+
+                    <h4>
+
+                        <?php
+                        echo htmlspecialchars(
+                            $project['title']
+                        );
+                        ?>
+
+                    </h4>
+
+
+                    <?php if (
+                        !empty(
+                            $project['technologies']
+                        )
+                    ) { ?>
+
+                        <p>
+
+                            <strong>
+                                Technologies:
+                            </strong>
+
+                            <?php
+                            echo htmlspecialchars(
+                                $project['technologies']
+                            );
+                            ?>
+
+                        </p>
+
+                    <?php } ?>
+
+
+                    <?php if (
+                        !empty(
+                            $project['description']
+                        )
+                    ) { ?>
+
+                        <p>
+
+                            <?php
+                            echo nl2br(
+                                htmlspecialchars(
+                                    $project['description']
+                                )
+                            );
+                            ?>
+
+                        </p>
+
+                    <?php } ?>
+
+                </div>
+
+            <?php } ?>
+
+        <?php } else { ?>
+
+            <p>
+                No projects added.
+            </p>
+
+        <?php } ?>
+
+    </div>
+
+
+    <!-- CONTACT -->
+
+    <div class="public-resume-section public-resume-contact">
+
+        <h3>
+            CONTACT
+        </h3>
+
+        <?php if (
+            !empty($contacts)
+        ) { ?>
+
+            <?php foreach (
+                $contacts as $contact
+            ) { ?>
+
+
+                <?php if (
+                    !empty(
+                        $contact['address']
+                    )
+                ) { ?>
+
+                    <p>
+
+                        <strong>
+                            Address:
+                        </strong>
+
+                        <?php
+                        echo htmlspecialchars(
+                            $contact['address']
+                        );
+                        ?>
+
+                    </p>
+
+                <?php } ?>
+
+
+                <?php if (
+                    !empty(
+                        $contact['city']
+                    )
+                ) { ?>
+
+                    <p>
+
+                        <strong>
+                            City:
+                        </strong>
+
+                        <?php
+                        echo htmlspecialchars(
+                            $contact['city']
+                        );
+                        ?>
+
+                    </p>
+
+                <?php } ?>
+
+
+                <?php if (
+                    !empty(
+                        $contact['state']
+                    )
+                ) { ?>
+
+                    <p>
+
+                        <strong>
+                            State:
+                        </strong>
+
+                        <?php
+                        echo htmlspecialchars(
+                            $contact['state']
+                        );
+                        ?>
+
+                    </p>
+
+                <?php } ?>
+
+
+                <?php if (
+                    !empty(
+                        $contact['alternate_email']
+                    )
+                ) { ?>
+
+                    <p>
+
+                        <strong>
+                            Alternate Email:
+                        </strong>
+
+                        <?php
+                        echo htmlspecialchars(
+                            $contact[
+                                'alternate_email'
+                            ]
+                        );
+                        ?>
+
+                    </p>
+
+                <?php } ?>
+
+            <?php } ?>
+
+        <?php } ?>
+
+    </div>
+
+
+    <!-- ACTIONS -->
+
+    <div class="public-resume-actions">
+
+        <button
+            type="button"
+            class="public-resume-btn public-resume-download"
+            onclick="window.print()"
+        >
+
+            <i class="fa-solid fa-download"></i>
+
+            Download PDF
+
+        </button>
+
+
+        <button
+            type="button"
+            class="public-resume-btn public-resume-share"
+            onclick="sharePublicResume()"
+        >
+
+            <i class="fa-solid fa-share-nodes"></i>
+
+            Share Resume
+
+        </button>
+
+    </div>
+
+</div>
+
+
+<script>
+
+function sharePublicResume()
+{
+
+    const resumeUrl =
+        window.location.origin +
+        "<?php
+            echo portfolioLink(
+                $username,
+                'resume'
+            );
+        ?>";
+
+
+    if (navigator.share) {
+
+        navigator.share({
+
+            title:
+                "<?php
+                echo htmlspecialchars(
+                    $user['fullname']
+                );
+                ?> - Resume",
+
+            text:
+                "View my resume",
+
+            url:
+                resumeUrl
+
+        }).catch(function(error) {
+
+            console.log(error);
+
+        });
+
+    } else {
+
+        navigator.clipboard
+            .writeText(resumeUrl)
+            .then(function() {
+
+                alert(
+                    "Resume link copied successfully!"
                 );
 
-            } else {
+            })
+            .catch(function() {
 
-                navigator.clipboard
-                    .writeText(
-                        resumeUrl
-                    )
-                    .then(
-                        function() {
+                alert(
+                    "Unable to copy resume link."
+                );
 
-                            alert(
-                                "Resume link copied successfully!"
-                            );
+            });
 
-                        }
-                    )
-                    .catch(
-                        function() {
+    }
 
-                            alert(
-                                "Unable to copy resume link."
-                            );
+}
 
-                        }
-                    );
-
-            }
-
-        }
-
-    </script>
-
+</script>
 
 <?php } ?>
 
@@ -2204,132 +2293,121 @@ function portfolioLink(
 
 <?php if ($section === 'contact') { ?>
 
+<div class="dashboard-card">
 
-    <div class="dashboard-card">
+    <h1>
+        <i class="fa-solid fa-envelope"></i>
+        Contact
+    </h1>
 
-
-        <h1>
-
-            <i class="fa-solid fa-envelope"></i>
-
-            Contact
-
-        </h1>
-
-
-        <p>
-
-            <strong>
-                Contact Information
-            </strong>
-
-        </p>
+    <p>
+        <strong>
+            Contact Information
+        </strong>
+    </p>
 
 
-        <?php if (!empty($contacts)) { ?>
+    <?php if (
+        !empty($contacts)
+    ) { ?>
+
+        <div class="portfolio-contact-list">
+
+            <?php foreach (
+                $contacts as $contact
+            ) { ?>
+
+                <div class="portfolio-contact-card">
+
+                    <h3>
+
+                        <i class="fa-solid fa-address-card"></i>
+
+                        Contact Details
+
+                    </h3>
 
 
-            <div class="portfolio-contact-list">
+                    <div class="portfolio-contact-info">
 
 
-                <?php foreach (
-                    $contacts
-                    as $contact
-                ) { ?>
+                        <?php if (
+                            !empty(
+                                $contact['address']
+                            )
+                        ) { ?>
+
+                            <div class="portfolio-contact-row">
+
+                                <strong>
+
+                                    <i class="fa-solid fa-location-dot"></i>
+
+                                    Address:
+
+                                </strong>
+
+                                <span>
+
+                                    <?php
+                                    echo nl2br(
+                                        htmlspecialchars(
+                                            $contact['address']
+                                        )
+                                    );
+                                    ?>
+
+                                </span>
+
+                            </div>
+
+                        <?php } ?>
 
 
-                    <div class="portfolio-contact-card">
+                        <?php if (
+                            !empty(
+                                $contact['city']
+                            ) ||
+                            !empty(
+                                $contact['state']
+                            ) ||
+                            !empty(
+                                $contact['pincode']
+                            )
+                        ) { ?>
 
+                            <div class="portfolio-contact-row">
 
-                        <h3>
+                                <strong>
 
-                            <i
-                                class="fa-solid fa-address-card"
-                            ></i>
+                                    <i class="fa-solid fa-map"></i>
 
-                            Contact Details
+                                    Location:
 
-                        </h3>
+                                </strong>
 
+                                <span>
 
-                        <div class="portfolio-contact-info">
+                                    <?php
 
+                                    if (
+                                        !empty(
+                                            $contact['city']
+                                        )
+                                    ) {
 
-                            <!-- ADDRESS -->
-
-                            <?php if (
-                                !empty(
-                                    $contact['address']
-                                )
-                            ) { ?>
-
-                                <div
-                                    class="portfolio-contact-row"
-                                >
-
-                                    <strong>
-
-                                        <i
-                                            class="fa-solid fa-location-dot"
-                                        ></i>
-
-                                        Address:
-
-                                    </strong>
-
-
-                                    <span>
-
-                                        <?php
-                                        echo nl2br(
-                                            htmlspecialchars(
-                                                $contact[
-                                                    'address'
-                                                ]
-                                            )
+                                        echo htmlspecialchars(
+                                            $contact['city']
                                         );
-                                        ?>
 
-                                    </span>
-
-                                </div>
-
-                            <?php } ?>
+                                    }
 
 
-                            <!-- CITY / STATE / PINCODE -->
-
-                            <?php if (
-                                !empty(
-                                    $contact['city']
-                                ) ||
-                                !empty(
-                                    $contact['state']
-                                ) ||
-                                !empty(
-                                    $contact['pincode']
-                                )
-                            ) { ?>
-
-
-                                <div
-                                    class="portfolio-contact-row"
-                                >
-
-                                    <strong>
-
-                                        <i
-                                            class="fa-solid fa-map"
-                                        ></i>
-
-                                        Location:
-
-                                    </strong>
-
-
-                                    <span>
-
-                                        <?php
+                                    if (
+                                        !empty(
+                                            $contact['state']
+                                        )
+                                    ) {
 
                                         if (
                                             !empty(
@@ -2337,378 +2415,305 @@ function portfolioLink(
                                             )
                                         ) {
 
-                                            echo htmlspecialchars(
+                                            echo ", ";
+
+                                        }
+
+                                        echo htmlspecialchars(
+                                            $contact['state']
+                                        );
+
+                                    }
+
+
+                                    if (
+                                        !empty(
+                                            $contact['pincode']
+                                        )
+                                    ) {
+
+                                        if (
+                                            !empty(
                                                 $contact['city']
-                                            );
-
-                                        }
-
-
-                                        if (
+                                            ) ||
                                             !empty(
                                                 $contact['state']
                                             )
                                         ) {
 
-                                            if (
-                                                !empty(
-                                                    $contact['city']
-                                                )
-                                            ) {
-
-                                                echo ", ";
-
-                                            }
-
-                                            echo htmlspecialchars(
-                                                $contact['state']
-                                            );
+                                            echo " - ";
 
                                         }
 
+                                        echo htmlspecialchars(
+                                            $contact['pincode']
+                                        );
 
-                                        if (
-                                            !empty(
-                                                $contact['pincode']
-                                            )
-                                        ) {
+                                    }
 
-                                            if (
-                                                !empty(
-                                                    $contact['city']
-                                                ) ||
-                                                !empty(
-                                                    $contact['state']
-                                                )
-                                            ) {
+                                    ?>
 
-                                                echo " - ";
+                                </span>
 
-                                            }
+                            </div>
 
-                                            echo htmlspecialchars(
-                                                $contact['pincode']
-                                            );
-
-                                        }
-
-                                        ?>
-
-                                    </span>
-
-                                </div>
+                        <?php } ?>
 
 
-                            <?php } ?>
+                        <?php if (
+                            !empty(
+                                $user['email']
+                            )
+                        ) { ?>
 
+                            <div class="portfolio-contact-row">
 
-                            <!-- MAIN EMAIL -->
+                                <strong>
 
-                            <?php if (
-                                !empty(
-                                    $user['email']
-                                )
-                            ) { ?>
+                                    <i class="fa-solid fa-envelope"></i>
 
-                                <div
-                                    class="portfolio-contact-row"
-                                >
+                                    Email:
 
-                                    <strong>
+                                </strong>
 
-                                        <i
-                                            class="fa-solid fa-envelope"
-                                        ></i>
-
-                                        Email:
-
-                                    </strong>
-
-
-                                    <a
-                                        href="mailto:<?php
-                                            echo htmlspecialchars(
-                                                $user['email']
-                                            );
-                                        ?>"
-                                    >
-
-                                        <?php
+                                <a
+                                    href="mailto:<?php
                                         echo htmlspecialchars(
                                             $user['email']
                                         );
-                                        ?>
-
-                                    </a>
-
-                                </div>
-
-                            <?php } ?>
-
-
-                            <!-- PHONE -->
-
-                            <?php if (
-                                !empty(
-                                    $user['phone']
-                                )
-                            ) { ?>
-
-                                <div
-                                    class="portfolio-contact-row"
+                                    ?>"
                                 >
 
-                                    <strong>
+                                    <?php
+                                    echo htmlspecialchars(
+                                        $user['email']
+                                    );
+                                    ?>
 
-                                        <i
-                                            class="fa-solid fa-phone"
-                                        ></i>
+                                </a>
 
-                                        Phone:
+                            </div>
 
-                                    </strong>
+                        <?php } ?>
 
 
-                                    <a
-                                        href="tel:<?php
-                                            echo htmlspecialchars(
-                                                $user['phone']
-                                            );
-                                        ?>"
-                                    >
+                        <?php if (
+                            !empty(
+                                $user['phone']
+                            )
+                        ) { ?>
 
-                                        <?php
+                            <div class="portfolio-contact-row">
+
+                                <strong>
+
+                                    <i class="fa-solid fa-phone"></i>
+
+                                    Phone:
+
+                                </strong>
+
+                                <a
+                                    href="tel:<?php
                                         echo htmlspecialchars(
                                             $user['phone']
                                         );
-                                        ?>
-
-                                    </a>
-
-                                </div>
-
-                            <?php } ?>
-
-
-                            <!-- ALTERNATE EMAIL -->
-
-                            <?php if (
-                                !empty(
-                                    $contact[
-                                        'alternate_email'
-                                    ]
-                                )
-                            ) { ?>
-
-                                <div
-                                    class="portfolio-contact-row"
+                                    ?>"
                                 >
 
-                                    <strong>
+                                    <?php
+                                    echo htmlspecialchars(
+                                        $user['phone']
+                                    );
+                                    ?>
 
-                                        <i
-                                            class="fa-solid fa-envelope-open"
-                                        ></i>
+                                </a>
 
-                                        Alternate Email:
+                            </div>
 
-                                    </strong>
+                        <?php } ?>
 
 
-                                    <a
-                                        href="mailto:<?php
-                                            echo htmlspecialchars(
-                                                $contact[
-                                                    'alternate_email'
-                                                ]
-                                            );
-                                        ?>"
-                                    >
+                        <?php if (
+                            !empty(
+                                $contact[
+                                    'alternate_email'
+                                ]
+                            )
+                        ) { ?>
 
-                                        <?php
+                            <div class="portfolio-contact-row">
+
+                                <strong>
+
+                                    <i class="fa-solid fa-envelope-open"></i>
+
+                                    Alternate Email:
+
+                                </strong>
+
+                                <a
+                                    href="mailto:<?php
                                         echo htmlspecialchars(
                                             $contact[
                                                 'alternate_email'
                                             ]
                                         );
-                                        ?>
-
-                                    </a>
-
-                                </div>
-
-                            <?php } ?>
-
-
-                            <!-- LINKEDIN -->
-
-                            <?php if (
-                                !empty(
-                                    $contact['linkedin']
-                                )
-                            ) { ?>
-
-                                <div
-                                    class="portfolio-contact-row"
+                                    ?>"
                                 >
 
-                                    <strong>
+                                    <?php
+                                    echo htmlspecialchars(
+                                        $contact[
+                                            'alternate_email'
+                                        ]
+                                    );
+                                    ?>
 
-                                        <i
-                                            class="fa-brands fa-linkedin"
-                                        ></i>
+                                </a>
 
-                                        LinkedIn:
+                            </div>
 
-                                    </strong>
-
-
-                                    <a
-                                        href="<?php
-                                            echo htmlspecialchars(
-                                                $contact[
-                                                    'linkedin'
-                                                ]
-                                            );
-                                        ?>"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                    >
-
-                                        View LinkedIn
-
-                                    </a>
-
-                                </div>
-
-                            <?php } ?>
+                        <?php } ?>
 
 
-                            <!-- GITHUB -->
+                        <?php if (
+                            !empty(
+                                $contact['linkedin']
+                            )
+                        ) { ?>
 
-                            <?php if (
-                                !empty(
-                                    $contact['github']
-                                )
-                            ) { ?>
+                            <div class="portfolio-contact-row">
 
-                                <div
-                                    class="portfolio-contact-row"
+                                <strong>
+
+                                    <i class="fa-brands fa-linkedin"></i>
+
+                                    LinkedIn:
+
+                                </strong>
+
+                                <a
+                                    href="<?php
+                                        echo htmlspecialchars(
+                                            $contact[
+                                                'linkedin'
+                                            ]
+                                        );
+                                    ?>"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                 >
 
-                                    <strong>
+                                    View LinkedIn
 
-                                        <i
-                                            class="fa-brands fa-github"
-                                        ></i>
+                                </a>
 
-                                        GitHub:
+                            </div>
 
-                                    </strong>
+                        <?php } ?>
 
 
-                                    <a
-                                        href="<?php
-                                            echo htmlspecialchars(
-                                                $contact[
-                                                    'github'
-                                                ]
-                                            );
-                                        ?>"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                    >
+                        <?php if (
+                            !empty(
+                                $contact['github']
+                            )
+                        ) { ?>
 
-                                        View GitHub
+                            <div class="portfolio-contact-row">
 
-                                    </a>
+                                <strong>
 
-                                </div>
+                                    <i class="fa-brands fa-github"></i>
 
-                            <?php } ?>
+                                    GitHub:
 
+                                </strong>
 
-                            <!-- WEBSITE -->
-
-                            <?php if (
-                                !empty(
-                                    $contact['website']
-                                )
-                            ) { ?>
-
-                                <div
-                                    class="portfolio-contact-row"
+                                <a
+                                    href="<?php
+                                        echo htmlspecialchars(
+                                            $contact[
+                                                'github'
+                                            ]
+                                        );
+                                    ?>"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                 >
 
-                                    <strong>
+                                    View GitHub
 
-                                        <i
-                                            class="fa-solid fa-globe"
-                                        ></i>
+                                </a>
 
-                                        Website:
+                            </div>
 
-                                    </strong>
+                        <?php } ?>
 
 
-                                    <a
-                                        href="<?php
-                                            echo htmlspecialchars(
-                                                $contact[
-                                                    'website'
-                                                ]
-                                            );
-                                        ?>"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                    >
+                        <?php if (
+                            !empty(
+                                $contact['website']
+                            )
+                        ) { ?>
 
-                                        Visit Website
+                            <div class="portfolio-contact-row">
 
-                                    </a>
+                                <strong>
 
-                                </div>
+                                    <i class="fa-solid fa-globe"></i>
 
-                            <?php } ?>
+                                    Website:
 
+                                </strong>
 
-                        </div>
+                                <a
+                                    href="<?php
+                                        echo htmlspecialchars(
+                                            $contact[
+                                                'website'
+                                            ]
+                                        );
+                                    ?>"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+
+                                    Visit Website
+
+                                </a>
+
+                            </div>
+
+                        <?php } ?>
 
 
                     </div>
 
+                </div>
 
-                <?php } ?>
+            <?php } ?>
 
+        </div>
 
-            </div>
+    <?php } else { ?>
 
+        <div class="no-contact">
 
-        <?php } else { ?>
+            <i class="fa-solid fa-circle-info"></i>
 
+            No contact details added yet.
 
-            <div class="no-contact">
+        </div>
 
-                <i
-                    class="fa-solid fa-circle-info"
-                ></i>
+    <?php } ?>
 
-                No contact details added yet.
-
-            </div>
-
-
-        <?php } ?>
-
-
-    </div>
-
+</div>
 
 <?php } ?>
 
 
 </div>
-
 
 </body>
 

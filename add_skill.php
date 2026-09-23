@@ -1,3 +1,4 @@
+```php
 <?php
 session_start();
 
@@ -11,7 +12,6 @@ if (!isset($_SESSION['username'])) {
     header("Location:login.php");
     exit();
 }
-
 
 
 /* =========================================
@@ -54,7 +54,7 @@ if (!$user) {
     die("User not found");
 }
 
-$user_id = $user['id'];
+$user_id = (int)$user['id'];
 
 $message = "";
 
@@ -104,18 +104,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         $stmt = $conn->prepare("
             INSERT INTO skills
-            (user_id, skill_name, percentage)
-            VALUES (?, ?, ?)
+            (user_id, skill_name, skill_level, percentage)
+            VALUES (?, ?, ?, ?)
         ");
 
         if (!$stmt) {
+
             $message = "Database error: " . $conn->error;
+
         } else {
 
             $stmt->bind_param(
-                "isi",
+                "issi",
                 $user_id,
                 $skill_name,
+                $level,
                 $percentage
             );
 
@@ -605,3 +608,4 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 </body>
 
 </html>
+```

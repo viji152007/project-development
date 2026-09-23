@@ -6,7 +6,7 @@ session_start();
 ========================================= */
 
 if (!isset($_SESSION['username'])) {
-    header("Location:login.php");
+    header("Location: login.php");
     exit();
 }
 
@@ -61,7 +61,7 @@ $user_id = (int)$user['id'];
 
 
 /* =========================================
-   DELETE PARTICULAR PROJECT
+   DELETE PROJECT
    CURRENT USER ONLY
 ========================================= */
 
@@ -140,8 +140,8 @@ $stmt->close();
 
 ?>
 
-
 <!DOCTYPE html>
+
 <html lang="en">
 
 <head>
@@ -175,6 +175,51 @@ $stmt->close();
     <style>
 
         /* =========================================
+           IMPORTANT LAYOUT FIX
+        ========================================= */
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100%;
+        }
+
+
+        body {
+            overflow-x: hidden;
+        }
+
+
+        /* =========================================
+           MAIN CONTENT
+           Sidebar = 250px
+        ========================================= */
+
+        .main-content {
+
+            margin-left: 250px;
+
+            width: calc(100% - 250px);
+
+            min-height: 100vh;
+
+            padding: 0;
+
+            position: relative;
+
+            overflow-x: hidden;
+
+        }
+
+
+        /* =========================================
            PROJECT PAGE
         ========================================= */
 
@@ -187,8 +232,6 @@ $stmt->close();
             margin: 0 auto;
 
             padding: 35px 30px;
-
-            box-sizing: border-box;
 
         }
 
@@ -217,6 +260,8 @@ $stmt->close();
             margin: 0 0 7px 0;
 
             font-size: 28px;
+
+            color: #111827;
 
         }
 
@@ -285,11 +330,13 @@ $stmt->close();
 
             gap: 22px;
 
+            width: 100%;
+
         }
 
 
         /* =========================================
-           PROJECT CARD - WHITE THEME
+           PROJECT CARD
         ========================================= */
 
         .project-card {
@@ -301,6 +348,8 @@ $stmt->close();
             background: #ffffff;
 
             border: 1px solid #e5e7eb;
+
+            width: 100%;
 
             box-sizing: border-box;
 
@@ -338,6 +387,8 @@ $stmt->close();
 
             color: #111827;
 
+            word-break: break-word;
+
         }
 
 
@@ -352,6 +403,8 @@ $stmt->close();
             line-height: 1.6;
 
             color: #4b5563;
+
+            word-break: break-word;
 
         }
 
@@ -375,6 +428,8 @@ $stmt->close();
             font-size: 14px;
 
             color: #374151;
+
+            word-break: break-word;
 
         }
 
@@ -540,7 +595,7 @@ $stmt->close();
 
 
         /* =========================================
-           DELETED MESSAGE
+           SUCCESS MESSAGE
         ========================================= */
 
         .success-message {
@@ -614,10 +669,19 @@ $stmt->close();
 
 
         /* =========================================
-           MOBILE
+           TABLET
         ========================================= */
 
-        @media (max-width: 800px) {
+        @media (max-width: 900px) {
+
+            .main-content {
+
+                margin-left: 250px;
+
+                width: calc(100% - 250px);
+
+            }
+
 
             .projects-grid {
 
@@ -628,7 +692,22 @@ $stmt->close();
         }
 
 
+        /* =========================================
+           MOBILE
+        ========================================= */
+
         @media (max-width: 600px) {
+
+            .main-content {
+
+                margin-left: 0;
+
+                width: 100%;
+
+                padding-top: 70px;
+
+            }
+
 
             .projects-page {
 
@@ -712,7 +791,10 @@ $stmt->close();
              SUCCESS MESSAGE
         ====================================== -->
 
-        <?php if (isset($_GET['deleted']) && $_GET['deleted'] == '1'): ?>
+        <?php if (
+            isset($_GET['deleted']) &&
+            $_GET['deleted'] == '1'
+        ): ?>
 
             <div class="success-message">
 
@@ -734,7 +816,9 @@ $stmt->close();
 
             <div class="projects-title">
 
-                <h2>My Projects</h2>
+                <h2>
+                    My Projects
+                </h2>
 
                 <p>
                     Manage your portfolio projects.
@@ -800,7 +884,9 @@ $stmt->close();
 
                         <!-- TECHNOLOGIES -->
 
-                        <?php if (!empty($project['technologies'])): ?>
+                        <?php if (
+                            !empty($project['technologies'])
+                        ): ?>
 
                             <div class="project-tech">
 
@@ -819,12 +905,16 @@ $stmt->close();
 
                         <!-- DEMO -->
 
-                        <?php if (!empty($project['demo_link'])): ?>
+                        <?php if (
+                            !empty($project['demo_link'])
+                        ): ?>
 
                             <div class="project-links">
 
                                 <a
-                                    href="<?= htmlspecialchars($project['demo_link']); ?>"
+                                    href="<?= htmlspecialchars(
+                                        $project['demo_link']
+                                    ); ?>"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     class="project-link"
@@ -941,6 +1031,7 @@ $stmt->close();
 
 
     </div>
+
 
 </div>
 
