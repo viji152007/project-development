@@ -1,3 +1,4 @@
+
 <?php
 
 session_start();
@@ -13,9 +14,8 @@ require_once "config/db.php";
 ========================================================= */
 
 if (
-    !isset($_SESSION['user_id']) &&
-    !isset($_SESSION['user']) &&
-    !isset($_SESSION['username'])
+    !isset($_SESSION['user_id']) ||
+    !is_numeric($_SESSION['user_id'])
 ) {
     header("Location: login.php");
     exit();
@@ -23,127 +23,52 @@ if (
 
 
 /* =========================================================
-   GET LOGGED-IN USER ID
+   GET USER ID FROM URL
+   Example:
+   about.php?user_id=1
 ========================================================= */
 
-$user_id = null;
-
-
-/* user_id session */
-
-if (isset($_SESSION['user_id'])) {
-
-    $user_id = (int) $_SESSION['user_id'];
-
+if (
+    !isset($_GET['user_id']) ||
+    !is_numeric($_GET['user_id'])
+) {
+    die("Invalid user ID.");
 }
 
-
-/* user session */
-
-elseif (isset($_SESSION['user'])) {
-
-    if (is_numeric($_SESSION['user'])) {
-
-        $user_id = (int) $_SESSION['user'];
-
-    } else {
-
-        $username = $_SESSION['user'];
-
-        $stmt = $conn->prepare("
-            SELECT id
-            FROM users
-            WHERE username = ?
-            LIMIT 1
-        ");
-
-        if (!$stmt) {
-            die("Database Error: " . $conn->error);
-        }
-
-        $stmt->bind_param("s", $username);
-        $stmt->execute();
-
-        $result = $stmt->get_result();
-        $row = $result->fetch_assoc();
-
-        $stmt->close();
-
-        if ($row) {
-            $user_id = (int) $row['id'];
-        }
-    }
-}
-
-
-/* username session */
-
-elseif (isset($_SESSION['username'])) {
-
-    $username = $_SESSION['username'];
-
-    $stmt = $conn->prepare("
-        SELECT id
-        FROM users
-        WHERE username = ?
-        LIMIT 1
-    ");
-
-    if (!$stmt) {
-        die("Database Error: " . $conn->error);
-    }
-
-    $stmt->bind_param("s", $username);
-    $stmt->execute();
-
-    $result = $stmt->get_result();
-    $row = $result->fetch_assoc();
-
-    $stmt->close();
-
-    if ($row) {
-        $user_id = (int) $row['id'];
-    }
-}
+$user_id = (int) $_GET['user_id'];
 
 
 /* =========================================================
-   GET USER DETAILS INCLUDING DB PHOTO
+   GET USER DETAILS USING URL USER ID
 ========================================================= */
 
-if ($user_id !== null) {
+$stmt = $conn->prepare("
+    SELECT
+        id,
+        fullname,
+        education,
+        career_objective,
+        username,
+        email,
+        phone,
+        profile_photo
+    FROM users
+    WHERE id = ?
+    LIMIT 1
+");
 
-    $stmt = $conn->prepare("
-        SELECT
-            id,
-            fullname,
-            education,
-            career_objective,
-            username,
-            email,
-            phone,
-            profile_photo
-        FROM users
-        WHERE id = ?
-        LIMIT 1
-    ");
-
-    if (!$stmt) {
-        die("Database Error: " . $conn->error);
-    }
-
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-
-    $result = $stmt->get_result();
-    $user = $result->fetch_assoc();
-
-    $stmt->close();
-
-} else {
-
-    $user = null;
+if (!$stmt) {
+    die("Database Error: " . $conn->error);
 }
+
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+
+$result = $stmt->get_result();
+
+$user = $result->fetch_assoc();
+
+$stmt->close();
 
 
 /* =========================================================
@@ -151,9 +76,7 @@ if ($user_id !== null) {
 ========================================================= */
 
 if (!$user) {
-
     die("User profile not found.");
-
 }
 
 
@@ -162,7 +85,6 @@ if (!$user) {
 ========================================================= */
 
 $profile_image = "";
-
 
 if (
     isset($user['profile_photo']) &&
@@ -173,7 +95,6 @@ if (
     $image_info = @getimagesizefromstring(
         $user['profile_photo']
     );
-
 
     if (
         $image_info !== false &&
@@ -266,9 +187,6 @@ if (
 
         <?php if ($profile_image !== ""): ?>
 
-
-            <!-- DB PHOTO -->
-
             <img
                 src="<?php echo htmlspecialchars($profile_image); ?>"
                 width="150"
@@ -277,11 +195,7 @@ if (
                 alt="Profile Photo"
             >
 
-
         <?php else: ?>
-
-
-            <!-- NO PHOTO -->
 
             <div
                 class="profile-img"
@@ -302,7 +216,6 @@ if (
                 <i class="fa-solid fa-user"></i>
 
             </div>
-
 
         <?php endif; ?>
 
@@ -396,16 +309,23 @@ if (
              EDIT PROFILE
         ================================================= -->
 
-        <a
-            href="edit_profile.php"
-            class="edit-btn"
-        >
+        <?php if (
+            isset($_SESSION['user_id']) &&
+            (int) $_SESSION['user_id'] === (int) $user['id']
+        ): ?>
 
-            <i class="fa-solid fa-pen"></i>
+            <a
+                href="edit_profile.php"
+                class="edit-btn"
+            >
 
-            Edit Profile
+                <i class="fa-solid fa-pen"></i>
 
-        </a>
+                Edit Profile
+
+            </a>
+
+        <?php endif; ?>
 
 
     </div>

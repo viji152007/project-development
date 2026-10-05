@@ -1,61 +1,121 @@
-<!-- SIDEBAR -->
+<?php
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+
+/* =====================================================
+   LOGIN CHECK
+===================================================== */
+
+if (!isset($_SESSION['user_id']) || !is_numeric($_SESSION['user_id'])) {
+    header("Location: /vijiii/login.php");
+    exit();
+}
+
+
+/* Logged-in user's Primary Key */
+
+$user_id = (int) $_SESSION['user_id'];
+
+?>
+
+<!-- =====================================================
+     SIDEBAR
+===================================================== -->
 
 <div class="sidebar">
 
+    <!-- PORTFOLIO TITLE -->
+
     <h2>
         <i class="fa-solid fa-user"></i>
-        My Portfolio
+        <span>My Portfolio</span>
     </h2>
+
+
+    <!-- HOME -->
 
     <a href="/vijiii/dashboard.php">
         <i class="fa-solid fa-house"></i>
         <span>Home</span>
     </a>
 
-    <a href="/vijiii/about.php">
+
+    <!-- ABOUT -->
+
+    <a href="/vijiii/about.php?user_id=<?php echo $user_id; ?>">
         <i class="fa-solid fa-user"></i>
         <span>About</span>
     </a>
-     <a href="/vijiii/education.php">
-                        <i class="fa-solid fa-graduation-cap"></i>
 
+
+    <!-- EDUCATION -->
+
+    <a href="/vijiii/education.php?user_id=<?php echo $user_id; ?>">
+        <i class="fa-solid fa-graduation-cap"></i>
         <span>Education</span>
     </a>
 
-    <a href="/vijiii/skills.php">
+
+    <!-- SKILLS -->
+
+    <a href="/vijiii/skills.php?user_id=<?php echo $user_id; ?>">
         <i class="fa-solid fa-code"></i>
         <span>Skills</span>
     </a>
 
-    <a href="/vijiii/projects.php">
+
+    <!-- PROJECTS -->
+
+    <a href="/vijiii/projects.php?user_id=<?php echo $user_id; ?>">
         <i class="fa-solid fa-folder"></i>
         <span>Projects</span>
     </a>
 
-    <a href="/vijiii/certificates.php">
+
+    <!-- CERTIFICATES -->
+
+    <a href="/vijiii/certificates.php?user_id=<?php echo $user_id; ?>">
         <i class="fa-solid fa-certificate"></i>
         <span>Certificates</span>
     </a>
 
-    <a href="/vijiii/resume.php">
-        <i class="fas fa-file-alt"></i>
+
+    <!-- RESUME -->
+
+    <a href="/vijiii/resume.php?user_id=<?php echo $user_id; ?>">
+        <i class="fa-solid fa-file-alt"></i>
         <span>Resume</span>
     </a>
 
-    <a href="/vijiii/contact.php">
+
+    <!-- CONTACT -->
+
+    <a href="/vijiii/contact.php?user_id=<?php echo $user_id; ?>">
         <i class="fa-solid fa-envelope"></i>
         <span>Contact</span>
     </a>
 
-    <a href="/vijiii/change_password.php">
+
+    <!-- CHANGE PASSWORD -->
+
+    <a href="/vijiii/change_password.php?user_id=<?php echo $user_id; ?>">
         <i class="fa-solid fa-lock"></i>
         <span>Change Password</span>
     </a>
 
-    <a href="/vijiii/shareportfolio.php">
-         <i class="fa-solid fa-link"></i>
-        <span>Share portfolio</span>
+
+    <!-- SHARE PORTFOLIO -->
+
+    <a href="/vijiii/shareportfolio.php?user_id=<?php echo $user_id; ?>">
+        <i class="fa-solid fa-link"></i>
+        <span>Share Portfolio</span>
     </a>
+
+
+    <!-- LOGOUT -->
 
     <a href="/vijiii/logout.php">
         <i class="fa-solid fa-right-from-bracket"></i>

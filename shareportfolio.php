@@ -105,14 +105,6 @@ $fullname = $user['fullname'];
    PORTFOLIO URL
 ===================================================== */
 
-/*
-   OLD:
-   portfolio.php?user=username
-
-   NEW:
-   portfolio/username
-*/
-
 $portfolio_url =
     "http://localhost:8080/vijiii/portfolio/"
     . rawurlencode($username);
@@ -216,6 +208,7 @@ $portfolio_url =
         <a
             href="<?php echo htmlspecialchars($portfolio_url); ?>"
             target="_blank"
+            rel="noopener noreferrer"
             class="btn"
         >
 
@@ -273,19 +266,76 @@ function sharePortfolio() {
 
     } else {
 
-        navigator.clipboard.writeText(url)
-            .then(function() {
+        if (
+            navigator.clipboard &&
+            window.isSecureContext
+        ) {
 
-                alert("Portfolio URL copied!");
+            navigator.clipboard.writeText(url)
 
-            })
-            .catch(function() {
+                .then(function() {
 
-                alert("Unable to copy portfolio URL.");
+                    alert(
+                        "Portfolio URL copied successfully!"
+                    );
 
-            });
+                })
+
+                .catch(function() {
+
+                    copyPortfolioLink(url);
+
+                });
+
+        } else {
+
+            copyPortfolioLink(url);
+
+        }
 
     }
+
+}
+
+
+/* =====================================================
+   COPY FALLBACK
+===================================================== */
+
+function copyPortfolioLink(url) {
+
+    const textarea =
+        document.createElement("textarea");
+
+    textarea.value = url;
+
+    textarea.style.position = "fixed";
+
+    textarea.style.left = "-9999px";
+
+    document.body.appendChild(textarea);
+
+    textarea.focus();
+
+    textarea.select();
+
+    try {
+
+        document.execCommand("copy");
+
+        alert(
+            "Portfolio URL copied successfully!"
+        );
+
+    } catch (error) {
+
+        alert(
+            "Please copy the Portfolio URL manually."
+        );
+
+    }
+
+    document.body.removeChild(textarea);
 
 }
 

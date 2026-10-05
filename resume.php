@@ -1903,7 +1903,8 @@ if (!empty($user['fullname'])) {
             <button
                 type="button"
                 class="action-btn download-btn"
-                onclick="downloadResume()"
+                  onclick="downloadResumePDF()"
+
             >
 
                 <i class="fa-solid fa-download"></i>

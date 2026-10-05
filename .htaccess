@@ -2,4 +2,8 @@ RewriteEngine On
 
 RewriteBase /vijiii/
 
+# Portfolio username URL
 RewriteRule ^portfolio/([^/]+)/?$ portfolio.php?user=$1 [L,QSA]
+
+# Portfolio username + section
+RewriteRule ^portfolio/([^/]+)/([^/]+)/?$ portfolio.php?user=$1&section=$2 [L,QSA]

@@ -457,7 +457,7 @@ function portfolioLink(
 ) {
 
     return
-        "/vijiii/portfolio/" .
+        "http://localhost:8080/vijiii/portfolio/" .
         rawurlencode($username) .
         "?section=" .
         rawurlencode($section);

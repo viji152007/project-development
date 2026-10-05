@@ -1,28 +1,40 @@
 <?php
+
 session_start();
 
-if (!isset($_SESSION['username'])) {
-    header("Location: login.php");
-    exit();
-}
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 require_once "config/db.php";
 
-if (!isset($conn) || $conn->connect_error) {
-    die("Database connection failed.");
+
+/* =====================================================
+   LOGIN CHECK
+===================================================== */
+
+if (!isset($_SESSION['user_id']) || !is_numeric($_SESSION['user_id'])) {
+
+    header("Location: login.php");
+    exit();
+
 }
 
 
 /* =====================================================
-   GET LOGGED-IN USER ID
+   GET CURRENT LOGGED-IN USER ID
 ===================================================== */
 
-$session_username = trim($_SESSION['username']);
+$user_id = (int) $_SESSION['user_id'];
+
+
+/* =====================================================
+   CHECK USER EXISTS
+===================================================== */
 
 $stmt = $conn->prepare("
     SELECT id
     FROM users
-    WHERE username = ?
+    WHERE id = ?
     LIMIT 1
 ");
 
@@ -30,7 +42,7 @@ if (!$stmt) {
     die("User query error: " . $conn->error);
 }
 
-$stmt->bind_param("s", $session_username);
+$stmt->bind_param("i", $user_id);
 $stmt->execute();
 
 $result = $stmt->get_result();
@@ -38,11 +50,16 @@ $user = $result->fetch_assoc();
 
 $stmt->close();
 
-if (!$user) {
-    die("User not found.");
-}
 
-$user_id = (int)$user['id'];
+if (!$user) {
+
+    session_unset();
+    session_destroy();
+
+    header("Location: login.php");
+    exit();
+
+}
 
 
 /* =====================================================
@@ -66,11 +83,12 @@ $form_open = false;
 
 /* =====================================================
    DELETE EDUCATION
+   ONLY CURRENT USER'S RECORD
 ===================================================== */
 
 if (isset($_GET['delete'])) {
 
-    $delete_id = (int)$_GET['delete'];
+    $delete_id = (int) $_GET['delete'];
 
     if ($delete_id > 0) {
 
@@ -104,7 +122,6 @@ if (isset($_GET['delete'])) {
 
 /* =====================================================
    ADD NEW EDUCATION
-   ALWAYS EMPTY
 ===================================================== */
 
 if (isset($_GET['add'])) {
@@ -127,11 +144,12 @@ if (isset($_GET['add'])) {
 
 /* =====================================================
    EDIT EDUCATION
+   ONLY CURRENT USER'S RECORD
 ===================================================== */
 
 if (isset($_GET['edit'])) {
 
-    $edit_id = (int)$_GET['edit'];
+    $edit_id = (int) $_GET['edit'];
 
     if ($edit_id > 0) {
 
@@ -173,6 +191,7 @@ if (isset($_GET['edit'])) {
 
             $form_data = $data;
             $form_open = true;
+
         }
     }
 }
@@ -184,7 +203,7 @@ if (isset($_GET['edit'])) {
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
-    $education_id = (int)($_POST['education_id'] ?? 0);
+    $education_id = (int) ($_POST['education_id'] ?? 0);
 
     $education_type = trim(
         $_POST['education_type'] ?? ''
@@ -246,7 +265,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 
         /* =================================================
-           UPDATE EXISTING EDUCATION
+           UPDATE
+           ONLY CURRENT USER'S EDUCATION
         ================================================= */
 
         if ($education_id > 0) {
@@ -295,7 +315,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 
             /* =================================================
-               INSERT NEW EDUCATION
+               INSERT
+               SAVE WITH CURRENT USER ID
             ================================================= */
 
             $stmt = $conn->prepare("
@@ -347,6 +368,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             }
 
             $stmt->close();
+
         }
 
 
@@ -356,12 +378,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         header("Location: education.php");
         exit();
+
     }
 }
 
 
 /* =====================================================
-   GET ALL EDUCATION FOR CURRENT USER
+   GET EDUCATION
+   ONLY CURRENT LOGGED-IN USER
 ===================================================== */
 
 $stmt = $conn->prepare("
@@ -392,7 +416,9 @@ $result = $stmt->get_result();
 $education = [];
 
 while ($row = $result->fetch_assoc()) {
+
     $education[] = $row;
+
 }
 
 $stmt->close();
@@ -401,6 +427,7 @@ $stmt->close();
 
 
 <!DOCTYPE html>
+
 <html lang="en">
 
 <head>
@@ -434,11 +461,13 @@ $stmt->close();
 ===================================================== */
 
 .education-page {
+
     width: 100%;
     max-width: 1100px;
     margin: 0 auto;
     padding: 30px 35px;
     box-sizing: border-box;
+
 }
 
 
@@ -447,23 +476,31 @@ $stmt->close();
 ===================================================== */
 
 .education-header {
+
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 20px;
     margin-bottom: 22px;
+
 }
 
+
 .education-title h2 {
+
     margin: 0 0 6px;
     font-size: 28px;
     color: #111827;
+
 }
 
+
 .education-title p {
+
     margin: 0;
     font-size: 14px;
     color: #111827;
+
 }
 
 
@@ -472,25 +509,37 @@ $stmt->close();
 ===================================================== */
 
 .add-education-btn {
+
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
+
     padding: 10px 17px;
+
     border: none;
     border-radius: 7px;
+
     background: #2196f3;
     color: #ffffff;
+
     text-decoration: none;
+
     font-size: 14px;
     font-weight: 600;
+
     cursor: pointer;
     white-space: nowrap;
+
     transition: 0.2s;
+
 }
 
+
 .add-education-btn:hover {
+
     background: #1976d2;
+
 }
 
 
@@ -499,19 +548,23 @@ $stmt->close();
 ===================================================== */
 
 .education-form-box {
+
     width: 100%;
+
     background: #ffffff;
+
     border: 1px solid #e5e7eb;
+
     border-radius: 14px;
+
     padding: 30px;
+
     box-sizing: border-box;
+
     box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+
     margin-bottom: 25px;
 
-    /* Make sure form is visible */
-    display: block;
-    visibility: visible;
-    opacity: 1;
 }
 
 
@@ -520,35 +573,58 @@ $stmt->close();
 ===================================================== */
 
 .form-box-header {
+
     display: flex;
+
     justify-content: space-between;
+
     align-items: center;
+
     margin-bottom: 25px;
+
 }
+
 
 .form-box-header h3 {
-    display: block;
-    visibility: visible;
+
     margin: 0;
+
     font-size: 21px;
+
     color: #111827;
+
 }
+
 
 .close-form {
+
     display: inline-flex;
+
     align-items: center;
+
     gap: 6px;
+
     padding: 8px 13px;
+
     border-radius: 7px;
+
     background: #f3f4f6;
+
     color: #374151;
+
     text-decoration: none;
+
     font-size: 13px;
+
     font-weight: 600;
+
 }
 
+
 .close-form:hover {
+
     background: #e5e7eb;
+
 }
 
 
@@ -557,40 +633,70 @@ $stmt->close();
 ===================================================== */
 
 .education-form {
+
     display: flex;
+
     flex-direction: column;
+
     gap: 17px;
+
 }
+
 
 .form-group {
+
     display: flex;
+
     flex-direction: column;
+
 }
 
+
 .form-group label {
+
     margin-bottom: 7px;
+
     font-size: 14px;
+
     font-weight: 600;
+
     color: #374151;
+
 }
+
 
 .form-group input,
 .form-group select {
+
     width: 100%;
+
     padding: 11px 13px;
+
     border: 1px solid #d1d5db;
+
     border-radius: 7px;
+
     background: #ffffff;
+
     color: #111827;
+
     font-size: 14px;
+
     outline: none;
+
     box-sizing: border-box;
+
 }
+
 
 .form-group input:focus,
 .form-group select:focus {
+
     border-color: #2196f3;
-    box-shadow: 0 0 0 3px rgba(33,150,243,0.10);
+
+    box-shadow:
+        0 0 0 3px rgba(33,150,243,0.10);
+
 }
 
 
@@ -599,42 +705,75 @@ $stmt->close();
 ===================================================== */
 
 .form-actions {
+
     display: flex;
+
     justify-content: flex-end;
+
     gap: 10px;
+
     padding-top: 8px;
+
 }
+
 
 .clear-btn {
+
     border: none;
+
     padding: 10px 17px;
+
     border-radius: 7px;
+
     background: #f3f4f6;
+
     color: #374151;
+
     font-weight: 600;
+
     cursor: pointer;
+
     text-decoration: none;
+
     display: inline-flex;
+
     align-items: center;
+
     justify-content: center;
+
 }
+
 
 .clear-btn:hover {
+
     background: #e5e7eb;
+
 }
+
 
 .save-btn {
+
     border: none;
+
     padding: 10px 18px;
+
     border-radius: 7px;
+
     background: #2196f3;
+
     color: #ffffff;
+
     font-weight: 600;
+
     cursor: pointer;
+
 }
 
+
 .save-btn:hover {
+
     background: #1976d2;
+
 }
 
 
@@ -643,39 +782,63 @@ $stmt->close();
 ===================================================== */
 
 .saved-education {
+
     width: 100%;
+
     background: #ffffff;
+
     border: 1px solid #e5e7eb;
+
     border-radius: 14px;
+
     padding: 30px;
+
     box-sizing: border-box;
+
     box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+
 }
 
+
 .saved-education-title {
+
     margin: 0 0 20px;
+
     font-size: 21px;
+
     color: #111827;
+
 }
 
 
 /* =====================================================
-   EACH SAVED EDUCATION
+   EACH EDUCATION
 ===================================================== */
 
 .education-row {
+
     width: 100%;
+
     padding: 22px 0;
+
     border-bottom: 1px solid #e5e7eb;
+
 }
+
 
 .education-row:first-of-type {
+
     padding-top: 5px;
+
 }
 
+
 .education-row:last-child {
+
     border-bottom: none;
+
     padding-bottom: 5px;
+
 }
 
 
@@ -684,22 +847,37 @@ $stmt->close();
 ===================================================== */
 
 .education-row-header {
+
     display: flex;
+
     justify-content: space-between;
+
     align-items: flex-start;
+
     gap: 20px;
+
 }
+
 
 .education-row h4 {
+
     margin: 0 0 6px;
+
     font-size: 18px;
+
     color: #111827;
+
 }
 
+
 .education-institution {
+
     margin: 0;
+
     font-size: 15px;
+
     color: #4b5563;
+
 }
 
 
@@ -708,21 +886,35 @@ $stmt->close();
 ===================================================== */
 
 .education-info {
+
     display: flex;
+
     flex-direction: column;
+
     gap: 8px;
+
     margin-top: 16px;
+
     font-size: 14px;
+
     color: #4b5563;
+
 }
+
 
 .education-info span {
+
     display: block;
+
     line-height: 1.5;
+
 }
 
+
 .education-info strong {
+
     color: #111827;
+
 }
 
 
@@ -731,34 +923,59 @@ $stmt->close();
 ===================================================== */
 
 .education-actions {
+
     display: flex;
+
     gap: 8px;
+
     flex-shrink: 0;
+
 }
+
 
 .edit-btn,
 .delete-btn {
+
     display: inline-flex;
+
     align-items: center;
+
     justify-content: center;
+
     gap: 6px;
+
     padding: 8px 12px;
+
     border-radius: 7px;
+
     text-decoration: none;
+
     font-size: 13px;
+
     font-weight: 600;
+
 }
+
 
 .edit-btn {
+
     background: #e8f3ff;
+
     color: #1976d2;
+
     border: 1px solid #bfdbfe;
+
 }
 
+
 .delete-btn {
+
     background: #fff1f2;
+
     color: #dc2626;
+
     border: 1px solid #fecdd3;
+
 }
 
 
@@ -769,36 +986,59 @@ $stmt->close();
 @media (max-width: 700px) {
 
     .education-page {
+
         padding: 25px 18px;
+
     }
+
 
     .education-header {
+
         flex-direction: column;
+
         align-items: flex-start;
+
     }
 
+
     .add-education-btn {
+
         width: 100%;
+
     }
+
 
     .education-form-box,
     .saved-education {
+
         padding: 20px;
+
     }
+
 
     .education-row-header {
+
         flex-direction: column;
+
         align-items: flex-start;
+
     }
 
+
     .education-actions {
+
         width: 100%;
+
     }
+
 
     .edit-btn,
     .delete-btn {
+
         flex: 1;
+
     }
+
 }
 
 </style>
@@ -818,6 +1058,7 @@ $stmt->close();
 
 <div class="main-content">
 
+
 <div class="education-page">
 
 
@@ -826,6 +1067,7 @@ $stmt->close();
 ===================================================== -->
 
 <div class="education-header">
+
 
     <div class="education-title">
 
@@ -839,8 +1081,6 @@ $stmt->close();
 
     </div>
 
-
-    <!-- ADD EDUCATION BUTTON -->
 
     <?php if (!$form_open): ?>
 
@@ -857,6 +1097,7 @@ $stmt->close();
 
     <?php endif; ?>
 
+
 </div>
 
 
@@ -866,16 +1107,16 @@ $stmt->close();
 
 <?php if ($form_open): ?>
 
+
 <div class="education-form-box">
 
-
-    <!-- FORM HEADER -->
 
     <div class="form-box-header">
 
         <h3>
             Education Details
         </h3>
+
 
         <a
             href="education.php"
@@ -891,16 +1132,12 @@ $stmt->close();
     </div>
 
 
-    <!-- FORM -->
-
     <form
         action="education.php"
         method="POST"
         class="education-form"
     >
 
-
-        <!-- HIDDEN EDUCATION ID -->
 
         <input
             type="hidden"
@@ -1084,19 +1321,13 @@ $stmt->close();
         <div class="form-actions">
 
 
-            <!-- CLEAR / CLOSE -->
-
             <a
                 href="education.php"
                 class="clear-btn"
             >
-
                 Clear
-
             </a>
 
-
-            <!-- SAVE -->
 
             <button
                 type="submit"
@@ -1116,17 +1347,16 @@ $stmt->close();
 
 </div>
 
+
 <?php endif; ?>
 
 
 <!-- =====================================================
      SAVED EDUCATION
-     
-     IMPORTANT:
-     SHOW ONLY WHEN FORM IS CLOSED
 ===================================================== -->
 
 <?php if (!$form_open && !empty($education)): ?>
+
 
 <div class="saved-education">
 
@@ -1141,8 +1371,6 @@ $stmt->close();
 
     <div class="education-row">
 
-
-        <!-- ROW HEADER -->
 
         <div class="education-row-header">
 
@@ -1160,12 +1388,8 @@ $stmt->close();
             </div>
 
 
-            <!-- EDIT / DELETE -->
-
             <div class="education-actions">
 
-
-                <!-- EDIT -->
 
                 <a
                     href="education.php?edit=<?= (int)$edu['id']; ?>"
@@ -1178,8 +1402,6 @@ $stmt->close();
 
                 </a>
 
-
-                <!-- DELETE -->
 
                 <a
                     href="education.php?delete=<?= (int)$edu['id']; ?>"
@@ -1199,8 +1421,6 @@ $stmt->close();
         </div>
 
 
-        <!-- EDUCATION DETAILS -->
-
         <div class="education-info">
 
 
@@ -1208,9 +1428,7 @@ $stmt->close();
 
                 <span>
 
-                    <strong>
-                        Course:
-                    </strong>
+                    <strong>Course:</strong>
 
                     <?= htmlspecialchars($edu['course']); ?>
 
@@ -1223,9 +1441,7 @@ $stmt->close();
 
                 <span>
 
-                    <strong>
-                        Department:
-                    </strong>
+                    <strong>Department:</strong>
 
                     <?= htmlspecialchars($edu['department']); ?>
 
@@ -1238,9 +1454,7 @@ $stmt->close();
 
                 <span>
 
-                    <strong>
-                        Start Year:
-                    </strong>
+                    <strong>Start Year:</strong>
 
                     <?= htmlspecialchars($edu['start_year']); ?>
 
@@ -1253,9 +1467,7 @@ $stmt->close();
 
                 <span>
 
-                    <strong>
-                        End Year:
-                    </strong>
+                    <strong>End Year:</strong>
 
                     <?= htmlspecialchars($edu['end_year']); ?>
 
@@ -1268,9 +1480,7 @@ $stmt->close();
 
                 <span>
 
-                    <strong>
-                        Percentage / CGPA:
-                    </strong>
+                    <strong>Percentage / CGPA:</strong>
 
                     <?= htmlspecialchars($edu['percentage']); ?>
 
@@ -1283,9 +1493,7 @@ $stmt->close();
 
                 <span>
 
-                    <strong>
-                        Grade:
-                    </strong>
+                    <strong>Grade:</strong>
 
                     <?= htmlspecialchars($edu['grade']); ?>
 
@@ -1305,6 +1513,7 @@ $stmt->close();
 
 </div>
 
+
 <?php endif; ?>
 
 
@@ -1316,4 +1525,3 @@ $stmt->close();
 </body>
 
 </html>
-```
